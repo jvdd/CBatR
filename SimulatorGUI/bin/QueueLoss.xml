@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Service Configuration
+
+const int MAX_MOTES = 15;
+const int MAX_LINKS = 2;
+typedef int[2, MAX_MOTES] m_id;
+typedef int[1, MAX_MOTES] d_id;
+const int routerId = 1;
+
+typedef struct {
+    int destination;
+    int distribution;
+    int power;
+    int packetLoss;
+    int latency;
+    int SNR;
+    int SF; 
+}Link;
+
+typedef struct {
+    int moteId;
+    int load;
+    int battery;
+    int numParents;
+    int dataProbability;
+    int queue;
+    Link links[MAX_LINKS];
+}Mote;
+
+double	powerConsumptionRate[16]	= { 20.2, 21.2, 22.3, 23.7, 24.7, 26.1, 27.5, 28.8, 30.0,
+			31.2, 32.4, 33.7, 35.1, 36.5, 38.0, 38.9 };
+
+typedef int [7, 12]SFRange;
+double SFTimes[SFRange] = {0.128, 0.258, 0.458, 0.858, 1.158, 1.58};
+const double CoulombUnit = 1000.0;
+const int receptionTime = 4;
+const double receptionCost = 14.2;
+
+typedef struct {
+//    int power;
+//    int packetLoss;
+    Mote motes[m_id];
+}LoRA;
+
+const Link EMPTY_LINK = {0,0,0,0,0,0,0};
+//&lt;LORA&gt;
+LoRA loRA ={{{2, 10, 11875, 1, 85,{{4, 100, 15, 10, 0, -2, 11},EMPTY_LINK}},{3, 10, 11875, 1, 100,{{1, 100, 1, 0, 0, 4, 11},EMPTY_LINK}},{4, 10, 11875, 1, 100,{{1, 100, 1, 0, 0, 2, 11},EMPTY_LINK}},{5, 10, 11877, 1, 100,{{9, 100, 1, 0, 0, 0, 11},EMPTY_LINK}},{6, 10, 11877, 1, 100,{{4, 100, 15, 17, 0, -3, 11},EMPTY_LINK}},{7, 10, 11873, 2, 100,{{2, 20, 1, 0, 0, 6, 11},{3, 80, 1, 0, 0, 2, 11}}},{8, 10, 11880, 1, 85,{{1, 100, 15, 0, 0, 0, 11},EMPTY_LINK}},{9, 10, 11876, 1, 100,{{1, 100, 1, 0, 0, 5, 11},EMPTY_LINK}},{10, 10, 11880, 2, 0,{{6, 0, 1, 0, 0, 1, 11},{5, 100, 15, 0, 0, 2, 11}}},{11, 10, 11877, 1, 100,{{7, 100, 15, 0, 0, 3, 11},EMPTY_LINK}},{12, 10, 11875, 2, 100,{{7, 50, 1, 0, 0, 2, 11},{3, 100, 15, 17, 0, -3, 11}}},{13, 10, 11880, 1, 73,{{11, 100, 15, 12, 0, -2, 11},EMPTY_LINK}},{14, 10, 11879, 1, 85,{{12, 100, 1, 0, 0, 2, 11},EMPTY_LINK}},{15, 10, 11879, 1, 100,{{12, 100, 1, 0, 0, 1, 11},EMPTY_LINK}}}};
+//&lt;/LORA&gt;
+
+//&lt;TOPO&gt;
+int topology[d_id] = {8,10,13,14,15,5,6,11,12,9,7,2,3,4,1};
+//int topology[d_id] = {10,5,6,9,4,1,1,1,1,1,1,1,1,1,1};
+
+//&lt;/Topology&gt;
+broadcast chan data[d_id], turn[d_id], done;
+
+int packets, expectedPackets;
+</declaration>
+	<template>
+		<name>MoteAutomata</name>
+		<parameter>m_id moteId</parameter>
+		<declaration>//clock t;
+int parent = 0;
+//double receivedData;
+Link link;
+int numParents;
+int queue;
+int totalPackets;
+
+bool hasLink(){
+    int i;
+    for(i = parent+1; i &lt; numParents; i++){
+        if (loRA.motes[moteId].links[i] != EMPTY_LINK){
+            return true;
+        }
+    }
+    return false;
+}
+
+int calcActualLoad(Link link){
+    // if there is no next link then current load should be used for this link
+    if (!hasLink())
+        return totalPackets;
+    else
+        if (link.distribution == 0 || totalPackets == 0){
+            return 0;
+        }
+        else if (link.distribution == 100){
+            return totalPackets;
+        }
+        else return (totalPackets * 10) /((totalPackets * 100) / link.distribution);
+}
+
+
+Link selectNextLink(){
+    int i;
+    for(i = parent+1; i &lt; numParents; i++){
+        if (loRA.motes[moteId].links[i] != EMPTY_LINK){
+            parent = i;
+            return loRA.motes[moteId].links[i];
+        }
+    }
+    return EMPTY_LINK;
+}
+
+int getQueuePackets(){
+    return queue;
+}
+
+int getDevicePackets(){
+    return loRA.motes[moteId].load;
+}
+
+void initialize(){
+    //queue += loRA.motes[moteId].load;
+    parent = -1;
+    numParents = loRA.motes[moteId].numParents;
+}
+
+void addToQueue(int numPackets){
+    queue += numPackets;
+   if (queue &gt; 40)
+        queue = 40;
+//    expectedLoad += expected;
+}
+
+void removePackets(int numPackets){
+    totalPackets -= numPackets;
+}
+
+int getMoteActivationPr(){
+    return loRA.motes[moteId].dataProbability;
+}</declaration>
+		<location id="id0" x="-204" y="85">
+			<name x="-297" y="76">MoteActive</name>
+			<committed/>
+		</location>
+		<location id="id1" x="-34" y="85">
+			<committed/>
+		</location>
+		<location id="id2" x="-17" y="187">
+			<name x="-76" y="204">ReceivePackets</name>
+			<committed/>
+		</location>
+		<location id="id3" x="-8" y="-34">
+			<name x="-42" y="-161">CalculateLoad</name>
+			<committed/>
+		</location>
+		<location id="id4" x="374" y="-34">
+			<name x="297" y="-170">PacketsSent</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="178" y="-34">
+			<name x="136" y="-161">SendPackets</name>
+			<committed/>
+		</location>
+		<location id="id6" x="-204" y="-34">
+			<name x="-221" y="-161">ForEachLink</name>
+			<committed/>
+		</location>
+		<location id="id7" x="119" y="85">
+			<name x="109" y="51">Idle</name>
+		</location>
+		<branchpoint id="id8" x="-102" y="85">
+		</branchpoint>
+		<init ref="id7"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id6"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-357" y="136">totalPackets = 
+getDevicePackets() +getQueuePackets(),
+expectedPackets += getDevicePackets()</label>
+			<label kind="probability" x="-280" y="110">getMoteActivationPr()</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="-144" y="8">totalPackets = getQueuePackets()</label>
+			<label kind="probability" x="-144" y="-8">100-getMoteActivationPr()</label>
+			<nail x="-102" y="51"/>
+			<nail x="-178" y="51"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="-8" y="42">turn[moteId]?</label>
+			<label kind="assignment" x="-8" y="59">initialize()</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id2"/>
+			<label kind="synchronisation" x="-68" y="127">data[moteId]?</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="assignment" x="17" y="-76">packets = 
+calcActualLoad(link)</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="42" y="161">addToQueue(packets)</label>
+			<nail x="255" y="187"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id7"/>
+			<label kind="guard" x="263" y="42">!hasLink()</label>
+			<label kind="synchronisation" x="263" y="25">done!</label>
+			<label kind="assignment" x="263" y="59">queue = 0</label>
+			<nail x="374" y="85"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<label kind="guard" x="263" y="-144">hasLink()</label>
+			<nail x="374" y="-119"/>
+			<nail x="-204" y="-119"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="195" y="-76">data[link.destination]!</label>
+			<label kind="assignment" x="195" y="-59">removePackets(packets)</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id3"/>
+			<label kind="assignment" x="-178" y="-76">link = 
+selectNextLink()</label>
+		</transition>
+	</template>
+	<template>
+		<name>Gateway</name>
+		<declaration>int count;
+double numPackets;
+//double expectedPackets;
+double queueLoss;
+double avgQueueLoss;
+
+void receivePackets(int packets){
+    numPackets = numPackets + packets;
+    //expectedPackets = expectedPackets + expected;
+}
+
+void reset(){
+    numPackets = 0;
+    expectedPackets = 0;
+}</declaration>
+		<location id="id9" x="-102" y="0">
+			<committed/>
+		</location>
+		<location id="id10" x="0" y="0">
+		</location>
+		<init ref="id10"/>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-119" y="76">done!</label>
+			<label kind="assignment" x="-136" y="102">queueLoss = queueLoss + (1.0- numPackets/expectedPackets),
+avgQueueLoss = queueLoss/count,
+reset()</label>
+			<nail x="-102" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id9"/>
+			<label kind="synchronisation" x="-119" y="-93">turn[routerId]?</label>
+			<label kind="assignment" x="-84" y="-34">count = count + 1</label>
+			<nail x="-102" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="110" y="-17">data[routerId]?</label>
+			<label kind="assignment" x="110" y="-34">receivePackets(packets)</label>
+			<nail x="102" y="-68"/>
+			<nail x="102" y="68"/>
+		</transition>
+	</template>
+	<template>
+		<name>Topology</name>
+		<declaration>clock t;
+int mId;
+int moteId;
+
+void initialize(){
+    mId = 1;
+}
+
+bool hasTurn(){
+    return mId != MAX_MOTES+1;
+}
+
+int nextTurn(){
+   return topology[mId++]; 
+}</declaration>
+		<location id="id11" x="204" y="-34">
+			<committed/>
+		</location>
+		<location id="id12" x="68" y="-34">
+		</location>
+		<location id="id13" x="-68" y="-34">
+			<committed/>
+		</location>
+		<location id="id14" x="-238" y="-34">
+			<committed/>
+		</location>
+		<location id="id15" x="-238" y="68">
+			<label kind="invariant" x="-229" y="76">t&lt;=1</label>
+		</location>
+		<init ref="id15"/>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id15"/>
+			<label kind="guard" x="119" y="25">!hasTurn()</label>
+			<label kind="assignment" x="119" y="42">t=0</label>
+			<nail x="204" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id14"/>
+			<label kind="guard" x="127" y="-127">hasTurn()</label>
+			<nail x="204" y="-136"/>
+			<nail x="-238" y="-136"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="93" y="-59">done?</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="-51" y="-59">turn[moteId]!</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id13"/>
+			<label kind="guard" x="-221" y="-76">hasTurn()</label>
+			<label kind="assignment" x="-221" y="-59">moteId = nextTurn()</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id14"/>
+			<label kind="guard" x="-229" y="0">t &gt;=1</label>
+			<label kind="assignment" x="-229" y="17">initialize()</label>
+		</transition>
+	</template>
+	<system>system //LoRANetwork;
+MoteAutomata, Gateway,Topology;</system>
+	<queries>
+		<query>
+			<formula>simulate 1[&lt;=30]{Gateway.avgQueueLoss}
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

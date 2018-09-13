@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Service Configuration
+
+const int MAX_MOTES = 15;
+const int MAX_LINKS = 2;
+typedef int[2, MAX_MOTES] m_id;
+typedef int [1, MAX_MOTES] d_id;
+const int routerId = 1;
+
+typedef struct {
+    int destination;
+    int distribution;
+    int power;
+    int packetLoss;
+    int latency;
+    int SNR;
+    int SF; 
+}Link;
+
+typedef struct {
+    int moteId;
+    int load;
+    int battery;
+    int numParents;
+    int dataProbability;
+    int queue;
+    Link links[MAX_LINKS];
+}Mote;
+
+typedef struct {
+//    int power;
+//    int packetLoss;
+    Mote motes[m_id];
+}LoRA;
+
+const Link EMPTY_LINK = {0,0,0,0,0,0,0};
+//&lt;LORA&gt;
+LoRA loRA ={{{2, 10, 2930, 1, 0,{{4, 100, 15, 65, 0, 3, 11},EMPTY_LINK}},
+{3, 10, 2908, 1, 100,{{1, 100, 15, 84, 0, 10, 11},EMPTY_LINK}},
+{4, 10, 2882, 1, 100,{{1, 100, 15, 82, 0, 10, 11},EMPTY_LINK}},
+{5, 10, 2973, 1, 100,{{9, 100, 15, 47, 0, 8, 11},EMPTY_LINK}},
+{6, 10, 2972, 1, 100,{{4, 100, 15, 47, 0, 3, 11},EMPTY_LINK}},
+{7, 10, 2904, 2, 100,{{2, 50, 5, 100, 0, -50, 11},{3, 50, 15, 33, 0, 10, 11}}},
+{8, 10, 2990, 1, 13,{{1, 100, 0, 0, 0, 0, 11},EMPTY_LINK}},
+{9, 10, 2947, 1, 100,{{1, 100, 15, 64, 0, 7, 11},EMPTY_LINK}},
+{10, 10, 2981, 2, 0,{{6, 50, 1, 0, 0, 10, 11},{5, 50, 15, 0, 0, -24, 11}}},
+{11, 10, 2972, 1, 100,{{7, 100, 15, 50, 0, -8, 11},EMPTY_LINK}},
+{12, 10, 2944, 2, 100,{{7, 50, 15, 44, 0, 11, 11},{3, 50, 15, 50, 0, 10, 11}}},
+{13, 10, 2989, 1, 0,{{11, 100, 15, 0, 0, -6, 11},EMPTY_LINK}},
+{14, 10, 2991, 1, 100,{{12, 100, 0, 0, 0, 2, 11},EMPTY_LINK}},
+{15, 10, 2991, 1, 13,{{12, 100, 0, 0, 0, 9, 11},EMPTY_LINK}}}};
+//&lt;/LORA&gt;
+
+//&lt;TOPO&gt;
+int topology[d_id] = {8,10,13,14,15,5,6,11,12,9,7,2,3,4,1};
+//&lt;/Topology&gt;
+broadcast chan data[d_id], turn[d_id], receive[d_id], done, sendPackets, failed;
+//int currentLoad;
+//int actualLoad;
+int packets;
+Link link;
+d_id rId;
+int load;
+int turns;</declaration>
+	<template>
+		<name>MoteDevice</name>
+		<parameter>m_id moteId</parameter>
+		<declaration>
+int parent = -1;
+int queue;
+int totalPackets;
+
+const int QUEUE_SIZE = 60;
+bool hasLink(){
+    int i;
+    for(i = parent + 1; i &lt; MAX_LINKS; i++){
+        if (loRA.motes[moteId].links[i] != EMPTY_LINK){
+            return true;
+        }
+    }
+    return false;
+}
+
+Link nextLink(){
+    int i;
+    for(i = parent + 1; i &lt; MAX_LINKS; i++){
+        if (loRA.motes[moteId].links[i] != EMPTY_LINK){
+            parent = i;
+            return loRA.motes[moteId].links[i];
+        }
+    }
+    return EMPTY_LINK;
+}
+
+
+int calcLoad(Link link){
+    int currentLoad;
+    //load = loRA.motes[moteId].load + queue;
+     if (parent == MAX_LINKS-1)
+        currentLoad = totalPackets;
+    else
+        currentLoad = totalPackets * link.distribution/100;
+
+    totalPackets -= currentLoad;
+    //actualLoad = actualLoad + load;
+    // now apply packetLoss
+    //currentLoad = currentLoad - (currentLoad * getPacketLoss(parent);
+    return currentLoad;
+}
+
+void reset(){
+    parent = -1;
+    queue = 0;
+    totalPackets = 0;
+}
+
+void receivePacket(){
+    if (queue &lt; QUEUE_SIZE)
+        queue++;
+}
+
+int getQueuePackets(){
+    return queue;
+}
+
+int getMotePackets(){
+    load += loRA.motes[moteId].load;
+    return loRA.motes[moteId].load;
+}
+
+int getMoteActivationPr(){
+    return 100;//loRA.motes[moteId].dataProbability;
+}
+</declaration>
+		<location id="id0" x="374" y="102">
+			<committed/>
+		</location>
+		<location id="id1" x="-238" y="102">
+			<committed/>
+		</location>
+		<location id="id2" x="-68" y="-34">
+			<name x="-118" y="-161">CalculateLoad</name>
+			<committed/>
+		</location>
+		<location id="id3" x="374" y="-34">
+			<urgent/>
+		</location>
+		<location id="id4" x="102" y="-34">
+			<name x="69" y="-161">SendPackets</name>
+			<committed/>
+		</location>
+		<location id="id5" x="-238" y="-34">
+			<name x="-254" y="-161">ForEachLink</name>
+			<committed/>
+		</location>
+		<location id="id6" x="238" y="102">
+			<name x="228" y="68">Idle</name>
+		</location>
+		<location id="id7" x="-136" y="102">
+			<committed/>
+		</location>
+		<location id="id8" x="102" y="102">
+			<committed/>
+		</location>
+		<branchpoint id="id9" x="0" y="102">
+		</branchpoint>
+		<init ref="id6"/>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id3"/>
+			<label kind="guard" x="161" y="-25">packets == 0</label>
+			<nail x="136" y="0"/>
+			<nail x="340" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id0"/>
+			<label kind="guard" x="297" y="25">!hasLink()</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="guard" x="-229" y="212">totalPackets == 0</label>
+			<nail x="-238" y="238"/>
+			<nail x="374" y="238"/>
+			<nail x="374" y="136"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-229" y="34">totalPackets != 0</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id1"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-102" y="25">totalPackets = 
+getQueuePackets()</label>
+			<label kind="probability" x="-102" y="8">100-getMoteActivationPr()</label>
+			<nail x="-34" y="68"/>
+			<nail x="-102" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="187" y="178">receive[moteId]?</label>
+			<label kind="assignment" x="187" y="195">receivePacket()</label>
+			<nail x="136" y="170"/>
+			<nail x="340" y="170"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id4"/>
+			<label kind="assignment" x="-51" y="-76">packets = 
+calcLoad(link)</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="289" y="59">done!</label>
+			<label kind="assignment" x="289" y="76">reset()</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="guard" x="306" y="-127">hasLink()</label>
+			<nail x="374" y="-136"/>
+			<nail x="-237" y="-136"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id3"/>
+			<label kind="guard" x="161" y="-110">packets &gt; 0</label>
+			<label kind="synchronisation" x="161" y="-93">sendPackets!</label>
+			<nail x="136" y="-68"/>
+			<nail x="340" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id2"/>
+			<label kind="assignment" x="-221" y="-76">link=
+nextLink()</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="127" y="76">turn[moteId]?</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-102" y="161">totalPackets = 
+getMotePackets() +
+ getQueuePackets()</label>
+			<label kind="probability" x="-102" y="144">getMoteActivationPr()</label>
+			<nail x="-34" y="136"/>
+			<nail x="-102" y="136"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id9"/>
+		</transition>
+	</template>
+	<template>
+		<name>Network</name>
+		<declaration>int packetLoss;
+
+int totalPackets;
+int count = 0;
+int lostPackets;
+void setPackets(int packets){
+    totalPackets = packets;
+}
+
+//void setPacketsLoss(int PLoss){
+//        packetLoss =PLoss;
+//}
+
+bool hasPacket(){
+    return count &lt; totalPackets;
+}
+
+void selectPacket(){
+    count++;
+}
+
+void removePacket(){
+    //count--;
+}
+
+void setReceiver(){
+    rId = link.destination;
+}
+
+void selectLinkPacketLoss(){
+    packetLoss = 0;
+    return;
+    if (link.SNR &gt;= 0)
+        packetLoss = 0;
+    else if (link.SNR &lt;-20)
+        packetLoss = 100;
+    else
+    packetLoss = -link.SNR*100/20;
+}
+
+void reset(){
+    count = 0;
+    totalPackets = 0;
+}
+</declaration>
+		<location id="id10" x="340" y="68">
+			<committed/>
+		</location>
+		<location id="id11" x="204" y="0">
+			<name x="170" y="-42">Successful</name>
+			<committed/>
+		</location>
+		<location id="id12" x="204" y="136">
+			<name x="187" y="162">Failed</name>
+			<committed/>
+		</location>
+		<location id="id13" x="476" y="68">
+			<committed/>
+		</location>
+		<location id="id14" x="-68" y="68">
+			<committed/>
+		</location>
+		<location id="id15" x="-68" y="204">
+		</location>
+		<branchpoint id="id16" x="68" y="68">
+		</branchpoint>
+		<init ref="id15"/>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id10"/>
+			<label kind="assignment" x="222" y="102">lostPackets++</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id13"/>
+			<label kind="assignment" x="357" y="42">removePacket()</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="246" y="0">receive[rId]!</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id14"/>
+			<label kind="guard" x="391" y="-59">hasPacket()</label>
+			<nail x="476" y="-68"/>
+			<nail x="-68" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id15"/>
+			<label kind="guard" x="391" y="161">!hasPacket()</label>
+			<label kind="assignment" x="391" y="178">reset()</label>
+			<nail x="476" y="204"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id12"/>
+			<label kind="probability" x="68" y="119">packetLoss</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id11"/>
+			<label kind="probability" x="34" y="8">100-packetLoss</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id16"/>
+			<label kind="assignment" x="-51" y="42">selectPacket()</label>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id14"/>
+			<label kind="synchronisation" x="-59" y="127">sendPackets?</label>
+			<label kind="assignment" x="-59" y="144">setPackets(packets),
+selectLinkPacketLoss(),
+setReceiver()</label>
+		</transition>
+	</template>
+	<template>
+		<name>Gateway</name>
+		<declaration>double numPackets;
+int receivedPackets;
+double packetLoss;
+
+int getLoad(){
+    //return turns*(MAX_MOTES-1)*10;
+    return load;
+}
+
+void reset(){
+    //load = 0;
+    //numPackets =0;
+}
+</declaration>
+		<location id="id17" x="-170" y="-8">
+			<name x="-348" y="-17">PacketLossCalculated</name>
+			<committed/>
+		</location>
+		<location id="id18" x="0" y="0">
+		</location>
+		<init ref="id18"/>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="-152" y="0">done!</label>
+			<label kind="assignment" x="-153" y="34">reset()</label>
+			<nail x="-170" y="34"/>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="-365" y="-110">turn[routerId]?</label>
+			<label kind="assignment" x="-365" y="-93">packetLoss=1-numPackets/getLoad()</label>
+			<nail x="-170" y="-68"/>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="17" y="-102">receive[routerId]?</label>
+			<label kind="assignment" x="17" y="-85">numPackets=numPackets + 1,
+receivedPackets++</label>
+			<nail x="170" y="-68"/>
+			<nail x="170" y="34"/>
+		</transition>
+	</template>
+	<template>
+		<name>Topology</name>
+		<declaration>clock t;
+int mId;
+int moteId;
+
+void initialize(){
+    mId = 1;
+    turns++;
+}
+
+bool hasTurn(){
+    return mId &lt; MAX_MOTES + 1;
+}
+
+int nextTurn(){
+   return topology[mId++]; 
+}</declaration>
+		<location id="id19" x="204" y="-34">
+			<committed/>
+		</location>
+		<location id="id20" x="68" y="-34">
+		</location>
+		<location id="id21" x="-68" y="-34">
+			<committed/>
+		</location>
+		<location id="id22" x="-238" y="-34">
+			<committed/>
+		</location>
+		<location id="id23" x="-238" y="68">
+			<label kind="invariant" x="-229" y="76">t&lt;=1</label>
+		</location>
+		<init ref="id23"/>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id23"/>
+			<label kind="guard" x="127" y="25">!hasTurn()</label>
+			<label kind="assignment" x="127" y="42">t =0</label>
+			<nail x="204" y="68"/>
+			<nail x="-212" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id22"/>
+			<label kind="guard" x="127" y="-127">hasTurn()</label>
+			<nail x="204" y="-136"/>
+			<nail x="-238" y="-136"/>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id19"/>
+			<label kind="synchronisation" x="93" y="-59">done?</label>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id20"/>
+			<label kind="synchronisation" x="-51" y="-59">turn[moteId]!</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id21"/>
+			<label kind="guard" x="-221" y="-76">hasTurn()</label>
+			<label kind="assignment" x="-221" y="-59">moteId = nextTurn()</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id22"/>
+			<label kind="guard" x="-229" y="0">t &gt;=1</label>
+			<label kind="assignment" x="-229" y="17">initialize()</label>
+		</transition>
+	</template>
+	<system>system //LoRANetwork;
+MoteDevice, Gateway, Network, Topology;
+//IoT;
+</system>
+	<queries>
+		<query>
+			<formula>simulate 1[&lt;=25]{Gateway.packetLoss}
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

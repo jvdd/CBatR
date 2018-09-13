@@ -1,0 +1,207 @@
+dtmc
+
+const double FrMote2_4 = 0.5;
+const double FrMote3_1 = 0.5;
+const double FrMote4_1 = 0.5;
+const double FrMote5_9 = 0.5;
+const double FrMote6_4 = 0.5;
+const double FrMote7_2 = 0.5;
+const double FrMote7_3 = 0.5;
+const double FrMote8_1 = 0.5;
+const double FrMote9_3 = 0.5;
+const double FrMote10_6 = 0.5;
+const double FrMote10_5 = 0.5;
+const double FrMote11_7 = 0.5;
+const double FrMote12_7 = 0.5;
+const double FrMote12_3 = 0.5;
+const double FrMote12_11 = 0.5;
+const double FrMote14_12 = 0.5;
+const double FrMote15_12 = 0.5;
+const double FrMote16_6 = 0.5;
+const double FrMote17_16 = 0.5;
+const double FrMote17_18 = 0.5;
+const double FrMote18_10 = 0.5;
+const double FrMote19_10 = 0.5;
+const double FrMote20_8 = 0.5;
+const double FrMote21_20 = 0.5;
+const double FrMote22_21 = 0.5;
+const double FrMote23_24 = 0.5;
+const double FrMote23_21 = 0.5;
+const double FrMote24_25 = 0.5;
+const double FrMote25_9 = 0.5;
+
+const double DfMote7_2 = 0.5;
+const double DfMote7_3 = 0.5;
+const double DfMote10_6 = 0.5;
+const double DfMote10_5 = 0.5;
+const double DfMote12_7 = 0.5;
+const double DfMote12_3 = 0.5;
+const double DfMote17_16 = 0.5;
+const double DfMote17_18 = 0.5;
+const double DfMote23_24 = 0.5;
+const double DfMote23_21 = 0.5;
+
+const double LoadMote2 = 0.8;
+const double LoadMote3 = 1.0;
+const double LoadMote4 = 0.8;
+const double LoadMote5 = 0.8;
+const double LoadMote6 = 0.8;
+const double LoadMote7 = 0.8;
+const double LoadMote8 = 1.0;
+const double LoadMote9 = 1.0;
+const double LoadMote10 = 0.8;
+const double LoadMote11 = 0.8;
+const double LoadMote12 = 0.8;
+const double LoadMote13 = 0.8;
+const double LoadMote14 = 0.8;
+const double LoadMote15 = 1.0;
+const double LoadMote16 = 1.0;
+const double LoadMote17 = 0.5;
+const double LoadMote18 = 1.0;
+const double LoadMote19 = 0.5;
+const double LoadMote20 = 1.0;
+const double LoadMote21 = 1.0;
+const double LoadMote22 = 0.5;
+const double LoadMote23 = 1.0;
+const double LoadMote24 = 0.5;
+const double LoadMote25 = 1.0;
+
+
+module Topology
+serviceInvoked:bool;
+sendID:[1..25] init 1;
+recvID:[1..25] init 1;
+turn:[0..25] init 0;
+
+//[] turn = 16 -> (turn'=2);
+[] turn = 0 -> LoadMote2:(turn'=2) + 1-LoadMote2:(turn'=0); 
+[] turn = 0 -> LoadMote3:(turn'=3) + 1-LoadMote3:(turn'=0); 
+[] turn = 0 -> LoadMote4:(turn'=4) + 1-LoadMote4:(turn'=0); 
+[] turn = 0 -> LoadMote5:(turn'=5) + 1-LoadMote5:(turn'=0); 
+[] turn = 0 -> LoadMote6:(turn'=6) + 1-LoadMote6:(turn'=0); 
+[] turn = 0 -> LoadMote7:(turn'=7) + 1-LoadMote7:(turn'=0); 
+[] turn = 0 -> LoadMote8:(turn'=8) + 1-LoadMote8:(turn'=0); 
+[] turn = 0 -> LoadMote9:(turn'=9) + 1-LoadMote9:(turn'=0); 
+[] turn = 0 -> LoadMote10:(turn'=10) + 1-LoadMote10:(turn'=0); 
+[] turn = 0 -> LoadMote11:(turn'=11) + 1-LoadMote11:(turn'=0); 
+[] turn = 0 -> LoadMote12:(turn'=12) + 1-LoadMote12:(turn'=0); 
+[] turn = 0 -> LoadMote13:(turn'=13) + 1-LoadMote13:(turn'=0); 
+[] turn = 0 -> LoadMote14:(turn'=14) + 1-LoadMote14:(turn'=0); 
+[] turn = 0 -> LoadMote15:(turn'=15) + 1-LoadMote15:(turn'=0); 
+[] turn = 0 -> LoadMote16:(turn'=16) + 1-LoadMote16:(turn'=0);
+[] turn = 0 -> LoadMote17:(turn'=17) + 1-LoadMote17:(turn'=0);
+[] turn = 0 -> LoadMote18:(turn'=18) + 1-LoadMote18:(turn'=0);
+[] turn = 0 -> LoadMote19:(turn'=19) + 1-LoadMote19:(turn'=0);
+[] turn = 0 -> LoadMote20:(turn'=20) + 1-LoadMote20:(turn'=0);
+[] turn = 0 -> LoadMote21:(turn'=21) + 1-LoadMote21:(turn'=0);
+[] turn = 0 -> LoadMote22:(turn'=22) + 1-LoadMote22:(turn'=0);
+[] turn = 0 -> LoadMote23:(turn'=23) + 1-LoadMote23:(turn'=0);
+[] turn = 0 -> LoadMote24:(turn'=24) + 1-LoadMote24:(turn'=0);
+[] turn = 0 -> LoadMote25:(turn'=25) + 1-LoadMote25:(turn'=0);
+
+[] turn = 2 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true);
+[] turn = 3 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 4 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 5 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 9) & (serviceInvoked'=true);
+[] turn = 6 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true);
+[] turn = 7 & serviceInvoked = false -> DfMote7_2:(sendID' = turn) & (recvID' = 2) & (serviceInvoked'=true) 
+	+ DfMote7_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+[] turn = 8 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 9 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 10 & serviceInvoked = false -> DfMote10_6:(sendID' = turn) & (recvID' = 6) & (serviceInvoked'=true) 
+	+ DfMote10_5:(sendID' = turn) & (recvID' = 5) & (serviceInvoked'=true);
+[] turn = 11 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 7) & (serviceInvoked'=true);
+[] turn = 12 & serviceInvoked = false -> DfMote12_7:(sendID' = turn) & (recvID' = 7) & (serviceInvoked'=true) 
+	+ DfMote12_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+[] turn = 13 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 11) & (serviceInvoked'=true);
+[] turn = 14 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 12) & (serviceInvoked'=true);
+[] turn = 15 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 12) & (serviceInvoked'=true);
+[] turn = 16 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 6) & (serviceInvoked'=true);
+[] turn = 17 & serviceInvoked = false -> DfMote17_16:(sendID' = turn) & (recvID' = 16) & (serviceInvoked'=true) 
+	+ DfMote17_18:(sendID' = turn) & (recvID' = 18) & (serviceInvoked'=true);
+[] turn = 18 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 10) & (serviceInvoked'=true);
+[] turn = 19 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 10) & (serviceInvoked'=true);
+[] turn = 20 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 8) & (serviceInvoked'=true);
+
+[] turn = 21 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 20) & (serviceInvoked'=true);
+[] turn = 22 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 21) & (serviceInvoked'=true);
+[] turn = 23 & serviceInvoked = false -> DfMote23_24:(sendID' = turn) & (recvID' = 24) & (serviceInvoked'=true) 
+	+ DfMote23_21:(sendID' = turn) & (recvID' = 21) & (serviceInvoked'=true);
+[] turn = 24 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 25) & (serviceInvoked'=true);
+[] turn = 25 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 9) & (serviceInvoked'=true);
+
+
+[sendData] (serviceInvoked=true) -> (serviceInvoked'=true); 
+
+[done] serviceInvoked=true & turn = 2 -> (serviceInvoked' = false) & (turn'=4);
+[done] serviceInvoked=true & turn = 3-> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 4 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 5 -> (serviceInvoked' = false) & (turn'=9);
+[done] serviceInvoked=true & turn = 6 -> (serviceInvoked' = false) & (turn'=4);
+[done] serviceInvoked=true & turn = 7 & recvID = 2 -> (serviceInvoked' = false) & (turn'=2);
+[done] serviceInvoked=true & turn = 7 & recvID = 3 -> (serviceInvoked' = false) & (turn'=3);
+[done] serviceInvoked=true & turn = 8 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 9 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 10 & recvID = 6 -> (serviceInvoked' = false) & (turn'=6);
+[done] serviceInvoked=true & turn = 10 & recvID = 5 -> (serviceInvoked' = false) & (turn'=5);
+[done] serviceInvoked=true & turn = 11 -> (serviceInvoked' = false) & (turn'=7);
+[done] serviceInvoked=true & turn = 12 & recvID = 7 -> (serviceInvoked' = false) & (turn'=7);
+[done] serviceInvoked=true & turn = 12 & recvID = 3 -> (serviceInvoked' = false) & (turn'=3);
+[done] serviceInvoked=true & turn = 13 -> (serviceInvoked' = false) & (turn'=11);
+[done] serviceInvoked=true & turn = 14 -> (serviceInvoked' = false) & (turn'=12);
+[done] serviceInvoked=true & turn = 15 -> (serviceInvoked' = false) & (turn'=12);
+[done] serviceInvoked=true & turn = 16 -> (serviceInvoked' = false) & (turn'=6);
+[done] serviceInvoked=true & turn = 17 & recvID = 16 -> (serviceInvoked' = false) & (turn'=16);
+[done] serviceInvoked=true & turn = 17 & recvID = 18 -> (serviceInvoked' = false) & (turn'=18);
+[done] serviceInvoked=true & turn = 18 -> (serviceInvoked' = false) & (turn'=10);
+[done] serviceInvoked=true & turn = 19 -> (serviceInvoked' = false) & (turn'=10);
+[done] serviceInvoked=true & turn = 20 -> (serviceInvoked' = false) & (turn'=8);
+[done] serviceInvoked=true & turn = 21 -> (serviceInvoked' = false) & (turn'=20);
+[done] serviceInvoked=true & turn = 22 -> (serviceInvoked' = false) & (turn'=21);
+[done] serviceInvoked=true & turn = 23 & recvID = 24 -> (serviceInvoked' = false) & (turn'=24);
+[done] serviceInvoked=true & turn = 23 & recvID = 21 -> (serviceInvoked' = false) & (turn'=21);
+[done] serviceInvoked=true & turn = 24 -> (serviceInvoked' = false) & (turn'=25);
+[done] serviceInvoked=true & turn = 25 -> (serviceInvoked' = false) & (turn'=9);
+
+[]turn = 1 -> (turn'=1);
+endmodule
+
+label "Packetloss" = status = 2;
+
+module Network
+status:[0..3] init 0; 
+[sendData] status = 0 -> (status'=1);
+
+[] status = 1 & sendID = 2 & recvID = 4  -> FrMote2_4:(status'=2) + 1-FrMote2_4:(status'=3);
+[] status = 1 & sendID = 3 & recvID = 1  -> FrMote3_1:(status'=2) + 1-FrMote3_1:(status'=3);
+[] status = 1 & sendID = 4 & recvID = 1  -> FrMote4_1:(status'=2) + 1-FrMote4_1:(status'=3);
+[] status = 1 & sendID = 5 & recvID = 9  -> FrMote5_9:(status'=2) + 1-FrMote5_9:(status'=3);
+[] status = 1 & sendID = 6 & recvID = 4  -> FrMote6_4:(status'=2) + 1-FrMote6_4:(status'=3);
+[] status = 1 & sendID = 7 & recvID = 2  -> FrMote7_2:(status'=2) + 1-FrMote7_2:(status'=3);
+[] status = 1 & sendID = 7 & recvID = 3  -> FrMote7_3:(status'=2) + 1-FrMote7_3:(status'=3);
+[] status = 1 & sendID = 8 & recvID = 1  -> FrMote8_1:(status'=2) + 1-FrMote8_1:(status'=3);
+[] status = 1 & sendID = 9 & recvID = 3  -> FrMote9_3:(status'=2) + 1-FrMote9_3:(status'=3);
+[] status = 1 & sendID = 10 & recvID = 6  -> FrMote10_6:(status'=2) + 1-FrMote10_6:(status'=3);
+[] status = 1 & sendID = 10 & recvID = 5  -> FrMote10_5:(status'=2) + 1-FrMote10_5:(status'=3);
+[] status = 1 & sendID = 11 & recvID = 7  -> FrMote11_7:(status'=2) + 1-FrMote11_7:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 7  -> FrMote12_7:(status'=2) + 1-FrMote12_7:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 3  -> FrMote12_3:(status'=2) + 1-FrMote12_3:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 11  -> FrMote12_11:(status'=2) + 1-FrMote12_11:(status'=3);
+[] status = 1 & sendID = 14 & recvID = 12  -> FrMote14_12:(status'=2) + 1-FrMote14_12:(status'=3);
+[] status = 1 & sendID = 15 & recvID = 12  -> FrMote15_12:(status'=2) + 1-FrMote15_12:(status'=3);
+[] status = 1 & sendID = 16 & recvID = 6  -> FrMote16_6:(status'=2) + 1-FrMote16_6:(status'=3);
+[] status = 1 & sendID = 17 & recvID = 16  -> FrMote17_16:(status'=2) + 1-FrMote17_16:(status'=3);
+[] status = 1 & sendID = 17 & recvID = 18  -> FrMote17_18:(status'=2) + 1-FrMote17_18:(status'=3);
+[] status = 1 & sendID = 18 & recvID = 10  -> FrMote18_10:(status'=2) + 1-FrMote18_10:(status'=3);
+[] status = 1 & sendID = 19 & recvID = 10  -> FrMote19_10:(status'=2) + 1-FrMote19_10:(status'=3);
+[] status = 1 & sendID = 20 & recvID = 8  -> FrMote20_8:(status'=2) + 1-FrMote20_8:(status'=3);
+[] status = 1 & sendID = 21 & recvID = 20  -> FrMote21_20:(status'=2) + 1-FrMote21_20:(status'=3);
+[] status = 1 & sendID = 22 & recvID = 21  -> FrMote22_21:(status'=2) + 1-FrMote22_21:(status'=3);
+[] status = 1 & sendID = 23 & recvID = 24  -> FrMote23_24:(status'=2) + 1-FrMote23_24:(status'=3);
+[] status = 1 & sendID = 23 & recvID = 21  -> FrMote23_21:(status'=2) + 1-FrMote23_21:(status'=3);
+[] status = 1 & sendID = 24 & recvID = 25  -> FrMote24_25:(status'=2) + 1-FrMote24_25:(status'=3);
+[] status = 1 & sendID = 25 & recvID = 9  -> FrMote25_9:(status'=2) + 1-FrMote25_9:(status'=3);
+
+[] status = 2 -> (status'=2);
+[done]status = 3 -> (status' = 0);
+endmodule

@@ -1,0 +1,1155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Service Configuration
+
+const int MAX_MOTES = 15;
+const int MAX_LINKS = 2;
+const int NUMBER_OF_LINKS = 17;
+typedef int[2, MAX_MOTES] m_id;
+typedef int [1, MAX_LINKS] l_id;
+const int routerId = 1;
+
+const int R1SNRStart = 10;
+const int R1SNREnd = 20;
+const int R1Power = 10;
+
+const int NONE = 0, CHANGE_DIST = 1, CHANGE_POWER = 2, MAX_STEPS = 2;
+typedef struct {
+    int latency;
+    int power;
+    int packetLoss;
+    int distribution;
+    int destination;
+    int SNR;
+    int SF;
+    int source;
+}Link;
+const Link EMPTY_LINK = {0,0,0,0,0,0,0,0};
+Link link;
+typedef struct {
+    int moteId;
+    int load;
+    int battery;
+    int parents;
+    int dataProbability;
+   	int queue;
+    Link links[MAX_LINKS];
+}Mote;
+Mote mote;
+typedef struct {
+    int energyConsumption;
+    int packetLoss;
+//    int queueLoss;
+    int latency;
+    Mote motes[m_id];
+}LoRA;
+
+LoRA loRAConf1;
+LoRA currentLoRA, newLoRAConf, loRA, EMPTY_LORA;
+
+//int bestIndex = 0;
+
+const int MAX_OPTIONS = 294;
+
+
+typedef struct{
+    int type;
+    Link link;
+}Step;
+typedef struct{
+    Step steps[NUMBER_OF_LINKS * 2];
+    int totalSteps;
+}Plan;
+struct{
+    LoRA currentLoRA;
+    LoRA prevLoRA;
+    LoRA bestCAO;
+    LoRA CAO[MAX_OPTIONS];
+    int nCAO;
+    Plan plan;
+    int bestIndex;
+}K;
+
+//LoRA CAO[MAX_OPTIONS];
+//int nCAO;
+chan monitor, analysis, planning, execute, noAdaptationReq, adaptationCompleted,changePower, changeDistribution, changeMoteConfig,analyzeQualities,done;
+
+bool isInSNRLimit(int snr){
+    return snr &gt;= R1SNRStart &amp;&amp; snr &lt;= R1SNREnd;
+}
+void reset(clock&amp; c){
+    c = 0;
+}
+
+const int COUNT_LINKS = 17;
+
+typedef struct{
+    int source;
+    int destination;
+    int multiplier;
+    int constant;
+}SNREquation;
+
+SNREquation snrEquations[COUNT_LINKS]={
+{2,	4,	20,	-500},
+{3,	1,	3,	425},
+{4,	1,	50,	200},
+{5,	9,	-2,	48},
+{6,	4,	2,	-384},
+{7,	3,	17,	231},
+{7,	2,	100,	500},
+{8,	1,	0,	45},
+{9,	1,	20,	520},
+{10, 6, 351, -221},
+{10,	5,	25,	-176},
+{11,	7,	38,	-213},
+{12,	7,	32,	296},
+{12,	3,	2,	-378},
+{13,	11,	2,	-281},
+{14,	12,	3,	259},
+{15,	12,	4,	132}};
+
+int getSNR(int source, int destination, int power){
+    int i, SNR;
+    for(i = 0; i &lt; COUNT_LINKS; i++){
+        if (snrEquations[i].source == source &amp;&amp; snrEquations[i].destination == destination){
+            SNR = (snrEquations[i].multiplier/100) * power + (snrEquations[i].constant/100);
+            return SNR;
+        }
+    }
+    return 0;
+}
+</declaration>
+	<template>
+		<name>EnvAndMSstub</name>
+		<declaration>clock t;
+const int MONITORING_TIME = 10;
+
+void getNetworkCurrentData(LoRA &amp;lora){
+    lora = loRA;
+}</declaration>
+		<location id="id0" x="272" y="102">
+			<committed/>
+		</location>
+		<location id="id1" x="0" y="0">
+			<name x="-42" y="-42">CalculateInfo</name>
+			<committed/>
+		</location>
+		<location id="id2" x="0" y="102">
+			<name x="-59" y="93">Start</name>
+			<label kind="invariant" x="-68" y="119">t &lt; MONITORING_TIME</label>
+		</location>
+		<init ref="id2"/>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id2"/>
+			<label kind="assignment" x="102" y="76">reset(t)</label>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id0"/>
+			<label kind="assignment" x="68" y="-25">getNetworkCurrentData(loRA)</label>
+			<nail x="272" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id1"/>
+			<label kind="guard" x="8" y="34">t == MONITORING_TIME</label>
+		</transition>
+	</template>
+	<template>
+		<name>Probe</name>
+		<declaration>clock t;
+const int PROBE_TIME = 5;
+
+void collectNetworkData(){
+    currentLoRA = loRAConf1;
+}
+
+// getAllMotes(){
+//    return loRAConf1.motes;
+//}
+</declaration>
+		<location id="id3" x="306" y="0">
+			<name x="246" y="-51">NotifyMonitor</name>
+			<committed/>
+		</location>
+		<location id="id4" x="119" y="68">
+			<committed/>
+		</location>
+		<location id="id5" x="119" y="0">
+			<name x="76" y="-51">CollectData</name>
+			<committed/>
+		</location>
+		<location id="id6" x="-59" y="0">
+			<name x="-76" y="-51">Wait</name>
+			<label kind="invariant" x="-42" y="8">t &lt; PROBE_TIME</label>
+		</location>
+		<init ref="id6"/>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<nail x="-59" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id3"/>
+			<label kind="comments" x="136" y="-25">motes=getAllMotes()</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="187" y="42">monitor!</label>
+			<label kind="assignment" x="-42" y="42">reset(t)</label>
+			<nail x="306" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id5"/>
+			<label kind="guard" x="-17" y="-25">t &lt;= PROBE_TIME</label>
+			<nail x="-25" y="0"/>
+		</transition>
+	</template>
+	<template>
+		<name>Effector</name>
+		<declaration>void setMoteConfig(Mote mote){
+    loRA.motes[mote.moteId] = mote;
+}</declaration>
+		<location id="id7" x="-374" y="34">
+			<name x="-408" y="51">ChangeMoteConfig</name>
+			<committed/>
+		</location>
+		<location id="id8" x="-204" y="0">
+			<name x="-229" y="-42">Waiting</name>
+		</location>
+		<init ref="id8"/>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-272" y="110">noAdaptationReq?</label>
+			<nail x="-238" y="102"/>
+			<nail x="-170" y="102"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-374" y="-76">changeMoteConfig?</label>
+			<label kind="assignment" x="-374" y="-59">setMoteConfig(mote)</label>
+			<nail x="-374" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-170" y="-59">adaptationCompleted?</label>
+			<nail x="-34" y="-34"/>
+			<nail x="-34" y="34"/>
+		</transition>
+	</template>
+	<template>
+		<name>Monitor</name>
+		<declaration>void updateKnowledge(){
+    K.prevLoRA = K.currentLoRA;
+    K.currentLoRA = currentLoRA;
+    currentLoRA = EMPTY_LORA;
+}
+
+void updateMotesTrafficLoad(){
+    updateKnowledge();
+}
+int a;
+void updateLinksSNR(){
+ a = 2;
+}
+
+
+bool analysisRequired(){
+    return true;//K.prevLoRA != K.currentLoRA;
+}
+
+
+
+
+</declaration>
+		<location id="id9" x="-348" y="-510">
+			<name x="-382" y="-561">UpdateSNR</name>
+			<committed/>
+		</location>
+		<location id="id10" x="-170" y="-374">
+			<name x="-229" y="-357">AnalysisRequired</name>
+			<committed/>
+		</location>
+		<location id="id11" x="-578" y="-510">
+			<name x="-637" y="-561">UpdateMotesTrafficLoad</name>
+			<committed/>
+		</location>
+		<location id="id12" x="-374" y="-374">
+			<name x="-408" y="-357">MonitorDone</name>
+			<committed/>
+		</location>
+		<location id="id13" x="-170" y="-510">
+			<name x="-229" y="-561">KnowledgeUpdated</name>
+			<committed/>
+		</location>
+		<location id="id14" x="-578" y="-374">
+			<name x="-603" y="-357">Waiting</name>
+		</location>
+		<init ref="id14"/>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id13"/>
+			<label kind="assignment" x="-323" y="-535">updateLinksSNR()</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id12"/>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id14"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id12"/>
+			<label kind="guard" x="-340" y="-467">!analysisRequired()</label>
+			<nail x="-204" y="-442"/>
+			<nail x="-374" y="-442"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-561" y="-450">monitor?</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id9"/>
+			<label kind="assignment" x="-552" y="-535">updateMotesTrafficLoad()</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id10"/>
+			<label kind="guard" x="-340" y="-416">analysisRequired()</label>
+			<label kind="synchronisation" x="-340" y="-399">analysis!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Analyzer</name>
+		<declaration>bool adaptation;
+Link link;
+
+const int SNR_BELOW_THRESHOLD = 0;
+const int SNR_UPPER_THRESHOLD = 10;
+const int SNR_THRESHOLD = 0;
+const int MAX_POWER = 15;
+const int DATA_PROBABILITY_THRESHOLD = 5;
+int count;
+
+void analyzeSNRValues(){
+
+}
+void analyzeTrafficLoad(){
+    int i, j;
+    Link link;
+    int diff;
+    Mote mote, prevMote;
+    adaptation = false;
+    if (K.prevLoRA == EMPTY_LORA){
+        adaptation = true;
+        return;
+    }
+    count++;
+   // if (count &lt; 5)
+    //	return;
+    // modifying logic for faster experiments
+    adaptation = count %4 == 0;
+            return;
+
+    for(i = routerId + 1; i &lt; MAX_MOTES; i++){
+        mote = K.currentLoRA.motes[i];
+        prevMote = K.prevLoRA.motes[i];
+        diff = mote.dataProbability - prevMote.dataProbability;
+        if (diff &gt; DATA_PROBABILITY_THRESHOLD || diff &gt; -DATA_PROBABILITY_THRESHOLD){
+            adaptation = true;
+            return;
+        }
+
+        for(j = 0; j &lt; mote.parents; j++){
+            link = mote.links[j];
+            if ((link.SNR &lt; SNR_BELOW_THRESHOLD &amp;&amp; link.power &lt; MAX_POWER) ||
+                (link.SNR &gt; SNR_UPPER_THRESHOLD &amp;&amp; link.power &gt; 0))
+            {
+                adaptation = true;
+                return;
+            }
+        }
+    }
+}
+
+bool adaptationNeeded(){
+    return adaptation;
+}
+
+int DISTRIBUTION_GAP = 20;
+LoRA newLoRA;
+Mote motes[6];
+int size;
+
+void saveMotes(){
+    int i, j, id;
+    LoRA loRA;
+    int max = K.nCAO;
+    if (max == 0){
+        loRA = newLoRA;
+        for(j = 0; j &lt; size; j++){
+            id = motes[j].moteId;
+            loRA.motes[id] = motes[j];
+            K.CAO[K.nCAO++] = loRA;
+        }
+    }
+    else {
+        for(i = 0; i &lt; max; i++){
+            loRA = K.CAO[i];
+            for(j = 0; j &lt; size; j++){
+                id = motes[j].moteId;
+                loRA.motes[id] = motes[j];
+                K.CAO[K.nCAO++] = loRA;
+            }
+        }
+    }
+}
+
+void createAdaptationOptions(Mote mote){
+    int i, j, k, l, m;
+    size = 0;
+    if (mote.parents == 2){
+        for(i = 0; i &lt;= 100; i+=DISTRIBUTION_GAP){
+               mote.links[0].distribution = i;
+               mote.links[1].distribution = 100-i;
+               motes[size++] = mote;
+        }
+              // mote.links[0].distribution = 100;
+              // mote.links[1].distribution = 100;
+              // motes[size++] = mote;
+    }
+    else if (mote.parents == 3){
+        for(i = DISTRIBUTION_GAP; i &lt; 100; i+=DISTRIBUTION_GAP){
+            for(j = DISTRIBUTION_GAP; j &lt; 100; j+=DISTRIBUTION_GAP){
+                k = 100 - (i + j);
+				if (i + j + k == 100 &amp;&amp; k &gt;= DISTRIBUTION_GAP){
+                    mote.links[0].distribution = i;
+                    mote.links[1].distribution = j;
+                    mote.links[2].distribution = k;
+                    motes[size++] = mote;
+                }
+            }
+        }
+    }
+    else if (mote.parents == 4){
+        for (i = DISTRIBUTION_GAP; i &lt; 100; i += DISTRIBUTION_GAP) {
+			for (j = DISTRIBUTION_GAP; j &lt; 100; j += DISTRIBUTION_GAP) {
+				for (k = DISTRIBUTION_GAP; k &lt; 100; k += DISTRIBUTION_GAP) {
+					l = 100 - (i + j + k);
+					if (i + j + k + l == 100 &amp;&amp; l &gt;= DISTRIBUTION_GAP){
+                        mote.links[0].distribution = i;
+                        mote.links[1].distribution = j;
+                        mote.links[2].distribution = k;
+                        mote.links[3].distribution = l;
+                        motes[size++] = mote;
+                    }
+				}
+			}
+		}
+    }
+    else if (mote.parents == 5){
+        for (i = DISTRIBUTION_GAP; i &lt; 100; i += DISTRIBUTION_GAP) {
+			for (j = DISTRIBUTION_GAP; j &lt; 100; j += DISTRIBUTION_GAP) {
+				for (k = DISTRIBUTION_GAP; k &lt; 100; k += DISTRIBUTION_GAP) {
+					for (l = DISTRIBUTION_GAP; l &lt; 100; l += DISTRIBUTION_GAP) {
+						m = 100 - (i + j + k + l);
+						if (i + j + k + l + m == 100 &amp;&amp; m &gt;= DISTRIBUTION_GAP){
+                            mote.links[0].distribution = i;
+                            mote.links[1].distribution = j;
+                            mote.links[2].distribution = k;
+                            mote.links[3].distribution = l;
+                            mote.links[4].distribution = m;
+                            motes[size++] = mote;
+                        }
+					}
+				}
+			}
+		}
+    }
+    saveMotes();
+}
+
+int getPacketLoss(int SNR){
+    if (SNR &lt; -20){
+        return 100;
+    }
+    else if (SNR &gt; 0){
+        return 0;
+    }
+    else
+        return -SNR*100/20;
+}
+
+void checkPowerSettings(){
+    int i, j, power, snr;
+    Mote mote;
+    Link link;
+    bool add = false;
+    for(i = routerId + 1; i &lt;= MAX_MOTES; i++){
+        mote = newLoRA.motes[i];
+        for (j = 0; j &lt; mote.parents; j++){
+            link = mote.links[j];
+            // if SNR is below threshold but destination mote is not removed
+            power = link.power;
+            snr = link.SNR;
+            if (link.SNR &lt; -10 &amp;&amp; snr != -50){
+                while(power &lt; 15 &amp;&amp; snr &lt;= -10){
+                    snr = getSNR(link.source, link.destination, ++power);
+                }
+                if (link.power != power){
+                    link.power = power;
+                    link.SNR = snr;
+                    link.packetLoss = getPacketLoss(snr);
+                    mote.links[j] = link;
+                    add = true;
+                }
+            }
+            else if (link.SNR &gt; 0 &amp;&amp; link.packetLoss == 0&amp;&amp; link.power &gt; 0){
+                int tempSNR = snr;
+                do{
+                    tempSNR = getSNR(link.source, link.destination, power-1);
+                    if(tempSNR &gt;=0){
+                        snr = tempSNR;
+                        power--;
+                    }
+                }while(power &gt; 1 &amp;&amp; tempSNR &gt;= 0);
+                if (link.power != power){
+                    link.power = power;
+                    link.SNR = snr;
+                    link.packetLoss = getPacketLoss(snr);
+                    mote.links[j] = link;
+                    add = true;
+                }
+            }
+        }
+        newLoRA.motes[i] = mote;
+    }
+    //if (add){
+    //    K.CAO[K.nCAO++] = newLoRA;
+    //}
+}
+
+void removeDuplication(){
+    int i;
+    for(i = routerId + 1; i &lt;= MAX_MOTES; i++){
+         if (newLoRA.motes[i].parents == 2){
+            if (newLoRA.motes[i].links[0].distribution == 100 &amp;&amp; newLoRA.motes[i].links[0].distribution == 100){
+                newLoRA.motes[i].links[0].distribution = 50;
+                newLoRA.motes[i].links[0].distribution = 50;
+            }
+        }
+    }
+}
+
+void findAdaptationOptions(){
+    int i;
+    Link newLink, oldLink;
+    Mote mote;
+    //K.nCAO = 0;
+    // check if power can be changed saved into newLoRA object
+    newLoRA = K.currentLoRA;
+    removeDuplication();
+    checkPowerSettings();
+
+    if (K.nCAO == 0){
+        // create distribution adaptation options
+        for (i = routerId + 1; i &lt;= MAX_MOTES; i++) {
+            mote = newLoRA.motes[i];
+            createAdaptationOptions(mote);
+	    }
+    }
+    else{
+        int j, k;
+        for (i = 0; i &lt; K.nCAO; i++) {
+            for (j = routerId + 1; j &lt;= MAX_MOTES; j++){
+                K.CAO[i].motes[j].dataProbability = newLoRA.motes[j].dataProbability;
+                K.CAO[i].motes[j].queue = newLoRA.motes[j].queue;
+                for (k = 0; k &lt; newLoRA.motes[i].parents; k++){
+                    oldLink = K.CAO[i].motes[j].links[k];
+                    newLink = newLoRA.motes[j].links[k];
+                    oldLink.power=newLink.power;
+                    oldLink.packetLoss=newLink.packetLoss;
+                    oldLink.SNR = newLink.SNR;
+
+                    K.CAO[i].motes[j].links[k] = oldLink;
+                }
+            }
+	    }
+    }
+    //CAO = K.CAO;
+    //nCAO = K.nCAO;
+}
+
+void saveQoSEstimates(){
+    //K.CAO = CAO;
+}
+</declaration>
+		<location id="id15" x="-229" y="-272">
+			<name x="-331" y="-255">AdptationNeeded</name>
+			<committed/>
+		</location>
+		<location id="id16" x="-391" y="-399">
+			<committed/>
+		</location>
+		<location id="id17" x="-425" y="-272">
+			<name x="-467" y="-255">QoSAnalysis</name>
+			<committed/>
+		</location>
+		<location id="id18" x="-229" y="-399">
+			<committed/>
+		</location>
+		<location id="id19" x="-561" y="-399">
+			<name x="-612" y="-450">AnalyzeUncertaintyParams</name>
+			<committed/>
+		</location>
+		<location id="id20" x="-229" y="-535">
+			<name x="-357" y="-569">NoAdaptationNeeded</name>
+			<committed/>
+		</location>
+		<location id="id21" x="-689" y="-272">
+			<name x="-748" y="-255">SaveQoSEstimates</name>
+			<committed/>
+		</location>
+		<location id="id22" x="-578" y="-272">
+			<name x="-612" y="-255">InvokeSMC</name>
+		</location>
+		<location id="id23" x="-689" y="-399" color="#00ff00">
+			<name x="-680" y="-450">Waiting</name>
+		</location>
+		<init ref="id23"/>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id17"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id18"/>
+			<label kind="assignment" x="-374" y="-425">analyzeSNRValues()</label>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-680" y="-357">planning!</label>
+			<label kind="assignment" x="-680" y="-340">saveQoSEstimates()</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id15"/>
+			<label kind="guard" x="-374" y="-348">adaptationNeeded()</label>
+			<label kind="assignment" x="-408" y="-297">findAdaptationOptions()</label>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id20"/>
+			<label kind="guard" x="-382" y="-484">!adaptationNeeded()</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id22"/>
+			<label kind="synchronisation" x="-561" y="-297">analyzeQualities!</label>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id16"/>
+			<label kind="assignment" x="-544" y="-425">analyzeTrafficLoad()</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id23"/>
+			<label kind="synchronisation" x="-527" y="-561">noAdaptationReq!</label>
+			<nail x="-689" y="-535"/>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id21"/>
+			<label kind="synchronisation" x="-655" y="-297">done?</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id19"/>
+			<label kind="synchronisation" x="-672" y="-425">analysis?</label>
+		</transition>
+	</template>
+	<template>
+		<name>SMC</name>
+		<declaration>
+
+void calculateQoS(){
+    int i;
+    for(i = 0; i &lt; K.nCAO; i++){
+        K.CAO[i].packetLoss = i;
+        K.CAO[i].energyConsumption = i+10;
+    }
+}</declaration>
+		<location id="id24" x="-51" y="68">
+			<name x="-93" y="25">SendResults</name>
+			<committed/>
+		</location>
+		<location id="id25" x="59" y="0">
+			<name x="34" y="-34">StartSMC</name>
+			<committed/>
+		</location>
+		<location id="id26" x="-161" y="0">
+			<name x="-171" y="-34">Wait</name>
+		</location>
+		<init ref="id26"/>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id26"/>
+			<label kind="synchronisation" x="-170" y="42">done!</label>
+			<nail x="-221" y="68"/>
+			<nail x="-221" y="0"/>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id24"/>
+			<label kind="assignment" x="8" y="42">calculateQoS()</label>
+			<nail x="119" y="0"/>
+			<nail x="119" y="68"/>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id25"/>
+			<label kind="synchronisation" x="-110" y="-25">analyzeQualities?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Planner</name>
+		<declaration>const int MAX_INT = 999999;
+// If a service configuration is changed then add it into the plan
+void addStep(int stepType, Link link){
+    Step step = {stepType, link};
+    K.plan.steps[K.plan.totalSteps++] = step;
+}
+
+Link link;
+int moteCount;
+int linkCount=0;
+int stepCount, step;
+//LoRA bestAO;
+
+bool hasLink(){
+     return !(moteCount == MAX_MOTES &amp;&amp; linkCount == MAX_LINKS-1);
+}
+
+Link nextLink(){
+    linkCount++;
+     if (linkCount == MAX_LINKS){
+        linkCount = 0;
+        moteCount++;
+    }
+    return K.bestCAO.motes[moteCount].links[linkCount];
+}
+
+bool hasStep(){
+    return step != NONE &amp;&amp; stepCount &lt; MAX_STEPS;
+}
+
+int nextStep(){
+    if (stepCount == 0 &amp;&amp; link.distribution != K.currentLoRA.motes[moteCount].links[linkCount].distribution){
+        stepCount = CHANGE_DIST;
+    }
+    else if(link.power != K.currentLoRA.motes[moteCount].links[linkCount].power){
+        stepCount = CHANGE_POWER;
+    }
+    else{
+        stepCount = NONE;
+    }
+    return stepCount;
+}
+
+void resetSteps(){
+    stepCount = 0;
+}
+
+void startPlanning(){
+    moteCount = 2;
+    linkCount = -1;
+    stepCount = 0;
+}
+
+void plannerCleanup(){
+    K.nCAO = 0;
+}
+    
+int R1 = 0;
+int R3 = 5;
+void applyRules(){
+    int i;
+    //int bestEConsumption = K.CAO[0].energyConsumption, bestPacketLoss = K.CAO[0].packetLoss, bestLatency = K.CAO[0].latency;
+    int bestEConsumption = MAX_INT, bestPacketLoss = MAX_INT, bestLatency = MAX_INT;
+        
+    LoRA cao;
+    
+    K.bestIndex = -1;
+    if (R1 == 0){
+        for(i = 0; i &lt; K.nCAO; i++){
+            cao = K.CAO[i];
+            if (cao.latency &lt;= R3 &amp;&amp; (cao.packetLoss &lt; bestPacketLoss || cao.packetLoss == bestPacketLoss &amp;&amp; cao.energyConsumption &lt; bestEConsumption)){
+                K.bestIndex = i;
+                bestEConsumption = cao.energyConsumption;
+                bestPacketLoss = cao.packetLoss;
+            }
+        }
+    }
+    else{
+        for(i = 0; i &lt; K.nCAO; i++){
+            cao = K.CAO[i];
+            if (cao.packetLoss &lt;= R1 &amp;&amp; (cao.latency &lt;= bestLatency &amp;&amp; cao.energyConsumption &lt; bestEConsumption)){
+                K.bestIndex = i;
+                bestEConsumption = cao.energyConsumption;
+                bestPacketLoss = cao.packetLoss;
+                bestLatency = cao.latency;
+            }
+        }
+    }
+    if (K.bestIndex == -1){
+        for(i = 0; i &lt; K.nCAO; i++){
+            cao = K.CAO[i];
+            if (cao.latency &lt;= bestLatency &amp;&amp; (cao.packetLoss &lt;= bestPacketLoss &amp;&amp; cao.energyConsumption &lt; bestEConsumption)){
+                K.bestIndex = i;
+                bestEConsumption = cao.energyConsumption;
+                bestPacketLoss = cao.packetLoss;
+                bestLatency = cao.latency;
+            }
+        }
+    }
+    
+    //Todo: Add goals
+    K.bestCAO = K.CAO[K.bestIndex!=-1?K.bestIndex:0];
+}</declaration>
+		<location id="id27" x="-263" y="-544">
+			<committed/>
+		</location>
+		<location id="id28" x="-748" y="-680">
+			<name x="-841" y="-714">ForEachStep</name>
+			<committed/>
+		</location>
+		<location id="id29" x="-918" y="-748">
+			<name x="-943" y="-790">BestAOFound</name>
+			<committed/>
+		</location>
+		<location id="id30" x="-748" y="-748">
+			<name x="-790" y="-790">ForEachLink</name>
+			<committed/>
+		</location>
+		<location id="id31" x="-544" y="-544">
+			<name x="-612" y="-587">ChangeDistribution</name>
+			<committed/>
+		</location>
+		<location id="id32" x="-544" y="-612">
+			<name x="-595" y="-654">ChangePower</name>
+			<committed/>
+		</location>
+		<location id="id33" x="-918" y="-620">
+			<name x="-901" y="-629">Plan</name>
+			<committed/>
+		</location>
+		<location id="id34" x="-748" y="-408">
+			<name x="-782" y="-442">PlanCreated</name>
+			<committed/>
+		</location>
+		<location id="id35" x="-714" y="-544">
+			<name x="-833" y="-552">CheckStepType</name>
+			<committed/>
+		</location>
+		<location id="id36" x="-374" y="-544">
+			<name x="-365" y="-535">StepPlanned</name>
+			<committed/>
+		</location>
+		<location id="id37" x="-918" y="-510" color="#00ff00">
+			<name x="-901" y="-518">Wait</name>
+		</location>
+		<init ref="id37"/>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id36"/>
+			<label kind="guard" x="-586" y="-501">step==NONE</label>
+			<nail x="-714" y="-476"/>
+			<nail x="-374" y="-476"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id28"/>
+			<label kind="guard" x="-578" y="-705">hasStep()</label>
+			<nail x="-340" y="-569"/>
+			<nail x="-340" y="-680"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id27"/>
+			<label kind="guard" x="-340" y="-569">!hasStep()</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id35"/>
+			<label kind="assignment" x="-739" y="-672">step=nextStep()</label>
+			<nail x="-748" y="-569"/>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id30"/>
+			<label kind="assignment" x="-884" y="-773">startPlanning()</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id28"/>
+			<label kind="assignment" x="-739" y="-731">link = nextLink(),
+resetSteps()</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id36"/>
+			<label kind="assignment" x="-526" y="-569">addStep(step, link)</label>
+		</transition>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id36"/>
+			<label kind="assignment" x="-518" y="-637">addStep(step, link)</label>
+			<nail x="-374" y="-612"/>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id29"/>
+			<label kind="assignment" x="-909" y="-697">applyRules()</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id34"/>
+			<label kind="guard" x="-578" y="-433">!hasLink()</label>
+			<nail x="-263" y="-408"/>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id31"/>
+			<label kind="guard" x="-705" y="-569">step==CHANGE_DIST</label>
+		</transition>
+		<transition>
+			<source ref="id34"/>
+			<target ref="id37"/>
+			<label kind="synchronisation" x="-909" y="-450">execute!</label>
+			<label kind="assignment" x="-909" y="-433">plannerCleanup()</label>
+			<nail x="-918" y="-408"/>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id30"/>
+			<label kind="guard" x="-578" y="-773">hasLink()</label>
+			<nail x="-263" y="-561"/>
+			<nail x="-263" y="-748"/>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id32"/>
+			<label kind="guard" x="-722" y="-637">step==CHANGE_POWER</label>
+			<nail x="-714" y="-612"/>
+		</transition>
+		<transition>
+			<source ref="id37"/>
+			<target ref="id33"/>
+			<label kind="synchronisation" x="-909" y="-578">planning?</label>
+		</transition>
+	</template>
+	<template>
+		<name>Executor</name>
+		<declaration>
+int index = 2;
+Step planStep;
+
+// Read the next plan step
+
+void nextMote(){
+    //mote = K.currentLoRA.motes[index++];
+    index++;
+}
+
+bool hasMote(){
+    return index &lt;= MAX_MOTES;
+}
+
+void copySteps(){
+    mote = K.bestCAO.motes[index];//[mote.moteId];
+}
+
+bool hasSteps(){
+    int i;
+    for(i = 0; i &lt; K.plan.totalSteps;i++){
+        if (K.plan.steps[i].link.source == index){//mote.moteId){
+            return true;
+        }
+    }
+    return false;
+}
+
+void executorInit(){
+	index = 1;
+}
+
+bool allPlanStepsExecuted(){
+	return index == K.plan.totalSteps;
+}
+
+void executorCleanup(){
+    K.plan.totalSteps=0;
+}</declaration>
+		<location id="id38" x="-110" y="-110">
+			<name x="-120" y="-144">ForEachMote</name>
+			<committed/>
+		</location>
+		<location id="id39" x="111" y="-8">
+			<name x="68" y="-51">NotifyEffector</name>
+			<committed/>
+		</location>
+		<location id="id40" x="-93" y="60">
+			<committed/>
+		</location>
+		<location id="id41" x="-263" y="196">
+			<name x="-254" y="170">PlanExecuted</name>
+			<committed/>
+		</location>
+		<location id="id42" x="306" y="60">
+			<committed/>
+		</location>
+		<location id="id43" x="-263" y="-110">
+			<name x="-254" y="-136">Execute</name>
+			<committed/>
+		</location>
+		<location id="id44" x="-263" y="60">
+			<name x="-246" y="51">Wait</name>
+		</location>
+		<init ref="id44"/>
+		<transition>
+			<source ref="id43"/>
+			<target ref="id38"/>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id42"/>
+			<label kind="guard" x="51" y="93">!hasSteps()</label>
+			<nail x="-93" y="128"/>
+			<nail x="306" y="127"/>
+		</transition>
+		<transition>
+			<source ref="id39"/>
+			<target ref="id42"/>
+			<label kind="synchronisation" x="153" y="-34">changeMoteConfig!</label>
+			<nail x="306" y="-8"/>
+		</transition>
+		<transition>
+			<source ref="id40"/>
+			<target ref="id39"/>
+			<label kind="guard" x="-76" y="-51">hasSteps()</label>
+			<label kind="assignment" x="-76" y="-34">copySteps()</label>
+			<nail x="-93" y="-8"/>
+		</transition>
+		<transition>
+			<source ref="id41"/>
+			<target ref="id44"/>
+			<label kind="synchronisation" x="-254" y="102">adaptationCompleted!</label>
+			<label kind="assignment" x="-254" y="119">executorCleanup()</label>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id38"/>
+			<label kind="guard" x="34" y="-136">hasMote()</label>
+			<nail x="323" y="26"/>
+			<nail x="323" y="-110"/>
+		</transition>
+		<transition>
+			<source ref="id42"/>
+			<target ref="id41"/>
+			<label kind="guard" x="34" y="170">!hasMote()</label>
+			<nail x="323" y="94"/>
+			<nail x="323" y="196"/>
+		</transition>
+		<transition>
+			<source ref="id38"/>
+			<target ref="id40"/>
+			<label kind="assignment" x="-102" y="-102">nextMote()</label>
+			<nail x="-110" y="26"/>
+		</transition>
+		<transition>
+			<source ref="id44"/>
+			<target ref="id43"/>
+			<label kind="synchronisation" x="-254" y="-50">execute?</label>
+			<label kind="assignment" x="-254" y="-34">executorInit()</label>
+		</transition>
+	</template>
+	<system>
+system
+//EnvAndMSstub, Probe,Effector,SMC,
+Monitor,Analyzer, Planner, Executor;</system>
+	<queries>
+		<query>
+			<formula>Probe.NotifyMonitor --&gt; Monitor.KnowledgeUpdated
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Monitor.AnalysisRequired --&gt; Analyzer.QoSAnalysis
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Analyzer.QoSAnalysis --&gt; Planner.PlanCreated
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Analyzer.InvokeSMC --&gt; SMC.StartSMC
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Planner.PlanCreated --&gt; Executor.PlanExecuted
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Planner.ChangePower --&gt; Executor.NotifyEffector
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>Executor.NotifyEffector --&gt; Effector.ChangeMoteConfig
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A[] K.bestCAO.packetLoss &lt; 10
+			</formula>
+			<comment>
+			</comment>
+		</query>
+		<query>
+			<formula>A[] not deadlock
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

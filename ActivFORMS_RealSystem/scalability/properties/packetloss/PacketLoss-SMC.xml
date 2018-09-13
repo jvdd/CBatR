@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const int MAX_MOTES = 15;
+const int MAX_LINKS = 2;
+typedef int[2, MAX_MOTES] m_id;
+typedef int [1, MAX_MOTES] d_id;
+const int routerId = 1;
+
+typedef struct {
+    int destination;
+    int distribution;
+    int power;
+    int packetLoss;
+    int latency;
+    int SNR;
+    int SF; 
+}Link;
+
+typedef struct {
+    int moteId;
+    int load;
+    int battery;
+    int numParents;
+    int dataProbability;
+    int queue;
+    Link links[MAX_LINKS];
+}Mote;
+
+typedef struct {
+    Mote motes[m_id];
+}LoRA;
+
+const Link EMPTY_LINK = {0,0,0,0,0,0,0};
+//&lt;LORA&gt;
+LoRA loRA ={{
+{2, 10, 11621, 1, 50,0,{{4, 100, 15, 10, 0, -5, 11},EMPTY_LINK}},
+{3, 10, 11592, 1, 100,0,{{1, 100, 0, 0, 0, 4, 11},EMPTY_LINK}},
+{4, 10, 11629, 1, 50,0,{{1, 100, 0, 0, 0, 2, 11},EMPTY_LINK}},
+{5, 10, 11659, 1, 50,0,{{9, 100, 0, 0, 0, 4, 11},EMPTY_LINK}},
+{6, 10, 11648, 1, 50,0,{{4, 100, 15, 17, 0, -6, 11},EMPTY_LINK}},
+{7, 10, 11607, 2, 50,0,{{2, 100, 0, 0, 0, 2, 11},{3, 0, 0, 0, 0, 2, 11}}},
+{8, 10, 11838, 1, 100,0,{{1, 100, 15, 0, 0, -2, 11},EMPTY_LINK}},
+{9, 10, 11637, 1, 100,0,{{1, 100, 0, 0, 0, 5, 11},EMPTY_LINK}},
+{10, 10, 11878, 2, 0,0,{{6, 100, 1, 0, 0, -1, 11},{5, 0, 15, 0, 0, -1, 11}}},
+{11, 10, 11640, 1, 50,0,{{7, 100, 15, 0, 0, -1, 11},EMPTY_LINK}},
+{12, 10, 11616, 2, 50,0,{{7, 100, 0, 0, 0, 3, 11},{3, 0, 15, 17, 0, -6, 11}}},
+{13, 10, 11874, 1, 40,0,{{11, 100, 15, 12, 0, -5, 11},EMPTY_LINK}},
+{14, 10, 11868, 1, 50,0,{{12, 100, 0, 0, 0, 2, 11},EMPTY_LINK}},
+{15, 10, 11857, 1, 100,0,{{12, 100, 0, 0, 0, -1, 11},EMPTY_LINK}}}};
+//&lt;/LORA&gt;
+broadcast chan data[m_id];
+Link link;
+
+
+int pTraffic(int moteId){
+    return loRA.motes[moteId].dataProbability;
+}
+
+Link getLink(int source, int destination){
+    Mote mote = loRA.motes[source];
+    if (mote.links[0].destination == destination)
+        return mote.links[0];
+
+    return mote.links[1];
+}
+
+void setLink(int source, int destination){
+    link = getLink(source, destination);
+}
+int pDist(int source, int destination){
+     return getLink(source, destination).distribution;
+}
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">Topology</name>
+		<declaration>// Place local declarations here.</declaration>
+		<location id="id0" x="-519" y="254" color="#c0c0c0">
+			<committed/>
+		</location>
+		<location id="id1" x="119" y="85" color="#c0c0c0">
+			<committed/>
+		</location>
+		<location id="id2" x="-425" y="390">
+			<name x="-451" y="407">Fifteen</name>
+			<urgent/>
+		</location>
+		<location id="id3" x="-399" y="314">
+			<name x="-433" y="331">Fourteen</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="-451" y="152">
+			<name x="-485" y="118">Thirteen</name>
+			<urgent/>
+		</location>
+		<location id="id5" x="-306" y="365">
+			<name x="-332" y="382">Twelve</name>
+			<urgent/>
+		</location>
+		<location id="id6" x="-264" y="195">
+			<name x="-274" y="161">Eleven</name>
+			<urgent/>
+		</location>
+		<location id="id7" x="-153" y="254">
+			<name x="-179" y="212">Seven</name>
+			<urgent/>
+		</location>
+		<location id="id8" x="-68" y="339">
+			<name x="-43" y="339">Three</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="-68" y="178">
+			<name x="-78" y="144">Two</name>
+			<urgent/>
+		</location>
+		<location id="id10" x="382" y="441" color="#c0c0c0">
+			<committed/>
+		</location>
+		<location id="id11" x="118" y="178">
+			<name x="127" y="152">Four</name>
+			<urgent/>
+		</location>
+		<location id="id12" x="280" y="178">
+			<name x="270" y="144">Six</name>
+			<urgent/>
+		</location>
+		<location id="id13" x="382" y="271">
+			<name x="407" y="263">Ten</name>
+			<urgent/>
+		</location>
+		<location id="id14" x="280" y="365">
+			<name x="297" y="356">Five</name>
+			<urgent/>
+		</location>
+		<location id="id15" x="-68" y="441" color="#c0c0c0">
+			<committed/>
+		</location>
+		<location id="id16" x="59" y="390">
+			<name x="76" y="373">Eight</name>
+			<urgent/>
+		</location>
+		<location id="id17" x="195" y="398">
+			<name x="178" y="415">Nine</name>
+			<urgent/>
+		</location>
+		<location id="id18" x="93" y="280">
+			<name x="110" y="271">Gateway</name>
+		</location>
+		<branchpoint id="id19" x="-459" y="280">
+		</branchpoint>
+		<branchpoint id="id20" x="195" y="136">
+		</branchpoint>
+		<branchpoint id="id21" x="119" y="136">
+		</branchpoint>
+		<branchpoint id="id22" x="34" y="136">
+		</branchpoint>
+		<branchpoint id="id23" x="-374" y="221">
+		</branchpoint>
+		<branchpoint id="id24" x="-178" y="408">
+		</branchpoint>
+		<branchpoint id="id25" x="-340" y="255">
+		</branchpoint>
+		<branchpoint id="id26" x="331" y="399">
+		</branchpoint>
+		<branchpoint id="id27" x="-485" y="195">
+		</branchpoint>
+		<branchpoint id="id28" x="382" y="356">
+		</branchpoint>
+		<branchpoint id="id29" x="280" y="271">
+		</branchpoint>
+		<branchpoint id="id30" x="-68" y="254">
+		</branchpoint>
+		<branchpoint id="id31" x="-221" y="331">
+		</branchpoint>
+		<init ref="id15"/>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id0"/>
+			<label kind="probability" x="-544" y="306">100-pTraffic(14)</label>
+			<nail x="-476" y="297"/>
+		</transition>
+		<transition>
+			<source ref="id19"/>
+			<target ref="id3"/>
+			<label kind="probability" x="-442" y="272">pTraffic(14)</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id12"/>
+			<label kind="probability" x="272" y="127">pTraffic(6)</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id1"/>
+			<label kind="probability" x="263" y="93">100-
+pTraffic(6)</label>
+			<nail x="204" y="119"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id1"/>
+			<label kind="probability" x="153" y="76">100-pTraffic(4)</label>
+			<nail x="136" y="136"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id11"/>
+			<label kind="probability" x="170" y="93">pTraffic(4)</label>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id1"/>
+			<label kind="probability" x="-42" y="76">100-pTraffic(2)</label>
+			<nail x="25" y="119"/>
+			<nail x="102" y="93"/>
+		</transition>
+		<transition>
+			<source ref="id22"/>
+			<target ref="id9"/>
+			<label kind="probability" x="-42" y="102">pTraffic(2)</label>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id0"/>
+			<label kind="probability" x="-399" y="93">100-
+pTraffic(11)</label>
+			<nail x="-365" y="204"/>
+		</transition>
+		<transition>
+			<source ref="id23"/>
+			<target ref="id6"/>
+			<label kind="probability" x="-297" y="119">pTraffic(11)</label>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id15"/>
+			<label kind="probability" x="-102" y="374">100-
+pTraffic(12)</label>
+			<nail x="-144" y="399"/>
+			<nail x="-93" y="416"/>
+		</transition>
+		<transition>
+			<source ref="id24"/>
+			<target ref="id5"/>
+			<label kind="probability" x="-221" y="374">pTraffic(12)</label>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id0"/>
+			<label kind="probability" x="-459" y="238">100-pTraffic(7)</label>
+			<nail x="-348" y="272"/>
+			<nail x="-484" y="263"/>
+		</transition>
+		<transition>
+			<source ref="id25"/>
+			<target ref="id7"/>
+			<label kind="probability" x="-306" y="229">pTraffic(7)</label>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id10"/>
+			<label kind="probability" x="340" y="459">100-
+pTraffic(5)</label>
+			<nail x="357" y="391"/>
+			<nail x="374" y="416"/>
+		</transition>
+		<transition>
+			<source ref="id26"/>
+			<target ref="id14"/>
+			<label kind="probability" x="314" y="365">pTraffic(5)</label>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id0"/>
+			<label kind="probability" x="-468" y="186">100-
+pTraffic(13)</label>
+			<nail x="-468" y="203"/>
+			<nail x="-493" y="237"/>
+		</transition>
+		<transition>
+			<source ref="id27"/>
+			<target ref="id4"/>
+			<label kind="probability" x="-553" y="152">pTraffic(13)</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id13"/>
+			<label kind="probability" x="407" y="314">pTraffic(10)</label>
+		</transition>
+		<transition>
+			<source ref="id28"/>
+			<target ref="id10"/>
+			<label kind="probability" x="407" y="373">100-
+pTraffic(10)</label>
+			<nail x="399" y="365"/>
+			<nail x="399" y="424"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id15"/>
+			<target ref="id0"/>
+			<nail x="-519" y="441"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id15"/>
+			<target ref="id24"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id0"/>
+			<target ref="id2"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id0"/>
+			<target ref="id19"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id1"/>
+			<target ref="id20"/>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id14"/>
+			<label kind="assignment" x="288" y="322">setLink(10,5)</label>
+			<label kind="probability" x="288" y="305">pDist(10,5)</label>
+		</transition>
+		<transition>
+			<source ref="id29"/>
+			<target ref="id12"/>
+			<label kind="assignment" x="288" y="220">setLink(10,6)</label>
+			<label kind="probability" x="288" y="203">pDist(10,6)</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id9"/>
+			<label kind="assignment" x="-60" y="212">setLink(7,2)</label>
+			<label kind="probability" x="-60" y="195">pDist(7,2)</label>
+		</transition>
+		<transition>
+			<source ref="id30"/>
+			<target ref="id8"/>
+			<label kind="assignment" x="-60" y="280">setLink(7,3)</label>
+			<label kind="probability" x="-60" y="263">pDist(7,3)</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id8"/>
+			<label kind="assignment" x="-204" y="356">setLink(12,3)</label>
+			<label kind="probability" x="-204" y="339">pDist(12,3)</label>
+		</transition>
+		<transition>
+			<source ref="id31"/>
+			<target ref="id7"/>
+			<label kind="assignment" x="-289" y="288">setLink(12,7)</label>
+			<label kind="probability" x="-289" y="271">pDist(12,7)</label>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id0"/>
+			<target ref="id25"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id1"/>
+			<target ref="id21"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id0"/>
+			<target ref="id23"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id1"/>
+			<target ref="id22"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id0"/>
+			<target ref="id27"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id0"/>
+			<target ref="id1"/>
+			<nail x="-519" y="110"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id15"/>
+			<target ref="id8"/>
+		</transition>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id31"/>
+			<label kind="synchronisation" x="-315" y="322">data[12]!</label>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-383" y="144">data[13]!</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-238" y="186">data[11]!</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="-1" y="152">data[2]!</label>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id30"/>
+			<label kind="synchronisation" x="-136" y="229">data[7]!</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="-1" y="314">data[3]!</label>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-407" y="356">data[15]!</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id5"/>
+			<label kind="synchronisation" x="-391" y="288">data[14]!</label>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id10"/>
+			<target ref="id28"/>
+			<nail x="382" y="415"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id10"/>
+			<target ref="id26"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id10"/>
+			<target ref="id17"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id15"/>
+			<target ref="id16"/>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="118" y="203">data[4]!</label>
+		</transition>
+		<transition>
+			<source ref="id12"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="178" y="152">data[6]!</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id29"/>
+			<label kind="synchronisation" x="305" y="246">data[10]!</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id17"/>
+			<label kind="synchronisation" x="212" y="356">data[5]!</label>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id15"/>
+			<target ref="id10"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="84" y="339">data[8]!</label>
+		</transition>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id18"/>
+			<label kind="synchronisation" x="152" y="322">data[9]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Network</name>
+		<declaration>Mote mote;
+
+void setLink(int moteId){
+    mote = loRA.motes[moteId];
+    if (mote.numParents == 1){
+        link = mote.links[0];
+    }
+}
+
+int packetLoss;
+
+void calcPacketLoss(){
+    if (link.SNR &lt;= -20){
+        packetLoss = 100;
+    }
+    else if (link.SNR &gt;= 0){
+        packetLoss = 0;
+    }
+    else
+        packetLoss = -link.SNR*100/20;
+}
+
+int getPacketLoss(){
+    return packetLoss;
+}</declaration>
+		<location id="id32" x="51" y="-102">
+			<name x="-42" y="-144">MessageReached</name>
+			<committed/>
+		</location>
+		<location id="id33" x="-153" y="0">
+			<name x="-229" y="17">PacketLossCalculated</name>
+			<committed/>
+		</location>
+		<location id="id34" x="51" y="85">
+			<name x="0" y="102">PacketLoss</name>
+		</location>
+		<location id="id35" x="-153" y="-102">
+			<name x="-178" y="-144">Start</name>
+		</location>
+		<branchpoint id="id36" x="51" y="0">
+		</branchpoint>
+		<init ref="id35"/>
+		<transition>
+			<source ref="id32"/>
+			<target ref="id35"/>
+		</transition>
+		<transition>
+			<source ref="id33"/>
+			<target ref="id36"/>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id34"/>
+			<label kind="probability" x="-68" y="42">getPacketLoss()</label>
+		</transition>
+		<transition>
+			<source ref="id36"/>
+			<target ref="id32"/>
+			<label kind="probability" x="-102" y="-59">100-getPacketLoss()</label>
+		</transition>
+		<transition>
+			<source ref="id35"/>
+			<target ref="id33"/>
+			<label kind="select" x="-272" y="-102">mId:m_id</label>
+			<label kind="synchronisation" x="-272" y="-85">data[mId]?</label>
+			<label kind="assignment" x="-272" y="-68">setLink(mId),
+calcPacketLoss()</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+//Process = Template();
+// List one or more processes to be composed into a system.
+system Topology, Network;//Process;
+    </system>
+	<queries>
+		<query>
+			<formula>Pr [&lt;=1](&lt;&gt;Network.PacketLoss)
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

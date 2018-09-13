@@ -1,0 +1,60 @@
+dtmc
+
+const double FrMote2_1 = 0.1;
+const double FrMote3_1 = 0.1;
+const double FrMote4_2 = 0.1;
+const double FrMote5_4 = 0.1;
+const double FrMote5_3 = 0.1;
+
+const double DfMote5_4 = 0.5;
+const double DfMote5_3 = 0.5;
+
+const double LoadMote2 = 1.0;
+const double LoadMote3 = 1.0;
+const double LoadMote4 = 0.8;
+const double LoadMote5 = 0.8;
+
+module Topology
+serviceInvoked:bool;
+sendID:[1..5] init 1;
+recvID:[1..5] init 1;
+turn:[0..5] init 0;
+
+//[] turn = 16 -> (turn'=2);
+[] turn = 0 -> (turn'=2);//LoadMote2:(turn'=2) + 1-LoadMote2:(turn'=7); 
+[] turn = 0 -> (turn'=3);//LoadMote3:(turn'=3) + 1-LoadMote3:(turn'=7); 
+[] turn = 0 -> LoadMote4:(turn'=4) + 1-LoadMote4:(turn'=0); 
+[] turn = 0 -> LoadMote5:(turn'=5) + 1-LoadMote5:(turn'=0); 
+
+[] turn = 2 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 3 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 4 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 2) & (serviceInvoked'=true);
+[] turn = 5 & serviceInvoked = false -> DfMote5_4:(sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true) 
+	+ DfMote5_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+
+[sendData] (serviceInvoked=true) -> (serviceInvoked'=true); 
+[done] serviceInvoked=true & turn = 2 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 3-> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 4 -> (serviceInvoked' = false) & (turn'=2);
+[done] serviceInvoked=true & turn = 5 & recvID = 4 -> (serviceInvoked' = false) & (turn'=4);
+[done] serviceInvoked=true & turn = 5 & recvID = 3 -> (serviceInvoked' = false) & (turn'=3);
+[done] serviceInvoked=true & turn = 1 -> (serviceInvoked' = false) & (turn'=1);
+
+[]turn = 1 -> (turn'=1);
+endmodule
+
+label "Packetloss" = status = 2;
+
+module Network
+status:[0..3] init 0; 
+[sendData] status = 0 -> (status'=1);
+
+[] status = 1 & sendID = 2 & recvID = 1  -> FrMote2_1:(status'=2) + 1-FrMote2_1:(status'=3);
+[] status = 1 & sendID = 3 & recvID = 1  -> FrMote3_1:(status'=2) + 1-FrMote3_1:(status'=3);
+[] status = 1 & sendID = 4 & recvID = 2  -> FrMote4_2:(status'=2) + 1-FrMote4_2:(status'=3);
+[] status = 1 & sendID = 5 & recvID = 4  -> FrMote5_4:(status'=2) + 1-FrMote5_4:(status'=3);
+[] status = 1 & sendID = 5 & recvID = 3  -> FrMote5_3:(status'=2) + 1-FrMote5_3:(status'=3);
+
+[] status = 2 -> (status'=2);
+[done]status = 3 -> (status' = 0);
+endmodule

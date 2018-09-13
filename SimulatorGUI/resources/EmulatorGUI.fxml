@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.chart.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane stylesheets="@style.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="deltaiot.gui.DeltaIoTEmulatorMain">
+	<top>
+		<Label text="DeltaIoT" BorderPane.alignment="CENTER">
+			<font>
+				<Font size="48.0" />
+			</font>
+		</Label>
+	</top>
+	<center>
+		<HBox>
+			<children>
+				<LineChart fx:id="chartEnergyConsumption" title="Energy Consumption" HBox.hgrow="ALWAYS">
+					<xAxis>
+						<NumberAxis side="BOTTOM" />
+					</xAxis>
+					<yAxis>
+						<NumberAxis side="LEFT" />
+					</yAxis>
+					<padding>
+						<Insets left="5.0" right="5.0" />
+					</padding>
+				</LineChart>
+				<LineChart fx:id="chartPacketLoss" title="Packet Loss (%)" HBox.hgrow="ALWAYS">
+					<xAxis>
+						<NumberAxis side="BOTTOM" />
+					</xAxis>
+					<yAxis>
+						<NumberAxis autoRanging="false" minorTickLength="0.0" side="LEFT" tickUnit="5" upperBound="50" />
+					</yAxis>
+					<padding>
+						<Insets left="5.0" right="5.0" />
+					</padding>
+				</LineChart>
+				<LineChart fx:id="chartLatency" title="Latency (%)" HBox.hgrow="ALWAYS">
+					<xAxis>
+						<NumberAxis side="BOTTOM" />
+					</xAxis>
+					<yAxis>
+						<NumberAxis autoRanging="false" minorTickLength="0.0" side="LEFT" tickUnit="5" upperBound="50" />
+					</yAxis>
+					<padding>
+						<Insets left="5.0" right="5.0" />
+					</padding>
+				</LineChart>
+			</children>
+		</HBox>
+	</center>
+	<bottom>
+		<FlowPane alignment="CENTER" columnHalignment="CENTER" prefHeight="40.0" BorderPane.alignment="CENTER">
+			<children>
+				<Button fx:id="runEmulator" mnemonicParsing="false" onAction="#runEmulatorClicked" text="Reference Approach" textAlignment="CENTER">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>
+				<Button fx:id="btnActivFORMS" mnemonicParsing="false" onAction="#btnActivFORMS" text="ActivFORMS Approach" textAlignment="CENTER">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>
+				<Button fx:id="btnRQV" mnemonicParsing="false" onAction="#btnRQV" text="RQV" textAlignment="CENTER">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>
+				
+				<!--<Button fx:id="btnUpdateModel" mnemonicParsing="false" onAction="#btnUpdateModel" text="Update Model" textAlignment="CENTER" visible="false">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>-->
+				<Button fx:id="btnDisplay" disable="true" mnemonicParsing="false" onAction="#btnDisplay" text="Display Topology">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>
+				<Button fx:id="btnSaveResults" mnemonicParsing="false" onAction="#btnSaveResults" text="Save Results" textAlignment="CENTER">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>
+				<Button id="btnClearResults" mnemonicParsing="false" onAction="#btnClearResults" text="Clear Results">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Button>
+				<ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</ProgressBar>
+				<Label fx:id="lblProgress">
+					<FlowPane.margin>
+						<Insets left="5.0" right="5.0" />
+					</FlowPane.margin>
+				</Label>
+			</children>
+		</FlowPane>
+	</bottom>
+</BorderPane>

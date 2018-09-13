@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy element &apos;DomainConstants.java&apos; to &apos;ActivFORMS_RealSystem/src/deltaiot.cbam&apos;&#x0D;&#x0A;- Original project: &apos;Simulator&apos;&#x0D;&#x0A;- Destination element: &apos;ActivFORMS_RealSystem/src/deltaiot.cbam&apos;&#x0D;&#x0A;- Original element: &apos;domain.DomainConstants.java&apos;" description="Copy compilation unit" destination="=ActivFORMS_RealSystem/src&lt;deltaiot.cbam" element1="/src&lt;domain{DomainConstants.java" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1513170896184" units="1" version="1.0"/>
+</session>

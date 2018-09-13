@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const int MAX_MOTES = 9;
+const int MAX_LINKS = 2;
+
+typedef int[2, MAX_MOTES] m_id;
+
+const int routerId = 1;
+
+typedef struct {
+    int destination;
+    int distribution;
+    int power;
+    int packetLoss;
+    int latency;
+    int SNR;
+    int SF; 
+}Link;
+
+typedef struct {
+    int moteId;
+    int load;
+    int battery;
+    int numParents;
+    int dataProbability;
+    int queue;
+    Link links[MAX_LINKS];
+}Mote;
+
+typedef struct {
+    Mote motes[m_id];
+}LoRA;
+
+const Link EMPTY_LINK = {0,0,0,0,0,0,0};
+//&lt;LORA&gt;
+LoRA loRA ={{
+//{2, 10, 11621, 1, 50,0,{{4, 100, 15, 10, 0, -2, 11},EMPTY_LINK}},
+{2, 10, 11629, 1, 80,0,{{1, 100, 0, 10, 0, 2, 11},EMPTY_LINK}},
+{3, 10, 11659, 1, 100,0,{{1, 100, 0, 10, 0, 4, 11},EMPTY_LINK}},
+{4, 10, 11648, 1, 80,0,{{2, 100, 15, 10, 0, -3, 11},EMPTY_LINK}},
+{5, 10, 11637, 1, 100,0,{{3, 100, 0, 10, 0, 5, 11},EMPTY_LINK}},
+{6, 10, 11878, 2, 80,0,{{5, 50, 0, 10, 0, 1, 11},{4, 50, 15, 10, 0, 2, 11}}},
+{7, 10, 11838, 1, 100,0,{{1, 100, 15, 10, 0, 0, 11},EMPTY_LINK}},
+{8, 10, 11607, 1, 100,0,{{2, 100, 0, 10, 0, 5, 11},EMPTY_LINK}},
+{9, 10, 11592, 1, 100,0,{{1, 100, 0, 10, 0, 4, 11},EMPTY_LINK}}
+//{11, 10, 11640, 1, 50,0,{{7, 100, 15, 0, 0, 3, 11},EMPTY_LINK}},
+//{12, 10, 11616, 2, 50,0,{{7, 100, 0, 0, 0, 2, 11},{3, 0, 15, 17, 0, -3, 11}}},
+//{13, 10, 11874, 1, 40,0,{{11, 100, 15, 12, 0, -2, 11},EMPTY_LINK}},
+//{14, 10, 11868, 1, 50,0,{{12, 100, 0, 0, 0, 2, 11},EMPTY_LINK}},
+//{15, 10, 11857, 1, 100,0,{{12, 100, 0, 0, 0, 1, 11},EMPTY_LINK}}
+}};
+//&lt;/LORA&gt;
+broadcast chan data[m_id];
+Link link;
+
+
+int pTraffic(int moteId){
+    return loRA.motes[moteId].dataProbability;
+}
+
+Link getLink(int source, int destination){
+    Mote mote = loRA.motes[source];
+    if (mote.links[0].destination == destination)
+        return mote.links[0];
+
+    return mote.links[1];
+}
+
+void setLink(int source, int destination){
+    link = getLink(source, destination);
+}
+int pDist(int source, int destination){
+     return getLink(source, destination).distribution;
+}
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">Topology</name>
+		<declaration>// Place local declarations here.</declaration>
+		<location id="id0" x="0" y="-102">
+			<name x="-10" y="-136">Nine</name>
+			<urgent/>
+		</location>
+		<location id="id1" x="-93" y="-170">
+			<committed/>
+		</location>
+		<location id="id2" x="8" y="-187">
+			<name x="-8" y="-170">Eight</name>
+			<urgent/>
+		</location>
+		<location id="id3" x="68" y="-34">
+			<name x="76" y="-25">Seven</name>
+			<urgent/>
+		</location>
+		<location id="id4" x="34" y="51">
+			<committed/>
+		</location>
+		<location id="id5" x="34" y="-289" color="#c0c0c0">
+			<committed/>
+		</location>
+		<location id="id6" x="391" y="51" color="#c0c0c0">
+			<committed/>
+		</location>
+		<location id="id7" x="127" y="-212">
+			<name x="136" y="-238">Two</name>
+			<urgent/>
+		</location>
+		<location id="id8" x="289" y="-212">
+			<name x="279" y="-246">Four</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="391" y="-119">
+			<name x="416" y="-127">Six</name>
+			<urgent/>
+		</location>
+		<location id="id10" x="289" y="-25">
+			<name x="306" y="-34">Five</name>
+			<urgent/>
+		</location>
+		<location id="id11" x="204" y="8">
+			<name x="187" y="25">Three</name>
+			<urgent/>
+		</location>
+		<location id="id12" x="102" y="-110">
+			<name x="119" y="-119">Gateway</name>
+		</location>
+		<branchpoint id="id13" x="85" y="-246">
+		</branchpoint>
+		<branchpoint id="id14" x="170" y="-255">
+		</branchpoint>
+		<branchpoint id="id15" x="391" y="-34">
+		</branchpoint>
+		<branchpoint id="id16" x="289" y="-119">
+		</branchpoint>
+		<init ref="id4"/>
+		<transition color="#a9a9a9">
+			<source ref="id1"/>
+			<target ref="id0"/>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="18" y="-123">data[9]!</label>
+		</transition>
+		<transition color="#a9a9a9">
+			<source ref="id1"/>
+			<target ref="id2"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="34" y="-187">data[8]!</label>
+		</transition>
+		<transition color="#a9a9a9">
+			<source ref="id1"/>
+			<target ref="id5"/>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id5"/>
+			<label kind="probability" x="-68" y="-255">100-pTraffic(2)</label>
+			<nail x="68" y="-238"/>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id5"/>
+			<label kind="probability" x="102" y="-331">100-
+pTraffic(4)</label>
+			<nail x="178" y="-280"/>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id6"/>
+			<label kind="probability" x="408" y="0">100-
+pTraffic(6)</label>
+			<nail x="416" y="-34"/>
+		</transition>
+		<transition>
+			<source ref="id15"/>
+			<target ref="id9"/>
+			<label kind="probability" x="399" y="-76">pTraffic(6)</label>
+		</transition>
+		<transition>
+			<source ref="id13"/>
+			<target ref="id7"/>
+			<label kind="probability" x="25" y="-221">pTraffic(2)</label>
+		</transition>
+		<transition>
+			<source ref="id14"/>
+			<target ref="id8"/>
+			<label kind="probability" x="212" y="-263">pTraffic(4)</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="93" y="-68">data[7]!</label>
+		</transition>
+		<transition color="#a9a9a9">
+			<source ref="id4"/>
+			<target ref="id3"/>
+		</transition>
+		<transition color="#a9a9a9">
+			<source ref="id4"/>
+			<target ref="id1"/>
+		</transition>
+		<transition color="#a9a9a9">
+			<source ref="id4"/>
+			<target ref="id6"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id5"/>
+			<target ref="id14"/>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id10"/>
+			<label kind="assignment" x="297" y="-68">setLink(6,5)</label>
+			<label kind="probability" x="297" y="-85">pDist(6,5)</label>
+		</transition>
+		<transition>
+			<source ref="id16"/>
+			<target ref="id8"/>
+			<label kind="assignment" x="297" y="-170">setLink(6,4)</label>
+			<label kind="probability" x="297" y="-187">pDist(6,4)</label>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id5"/>
+			<target ref="id13"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id6"/>
+			<target ref="id15"/>
+			<nail x="391" y="25"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id6"/>
+			<target ref="id10"/>
+		</transition>
+		<transition color="#c0c0c0">
+			<source ref="id6"/>
+			<target ref="id11"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="127" y="-187">data[2]!</label>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="187" y="-238">data[4]!</label>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id16"/>
+			<label kind="synchronisation" x="314" y="-144">data[6]!</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id11"/>
+			<label kind="synchronisation" x="221" y="-34">data[5]!</label>
+		</transition>
+		<transition>
+			<source ref="id11"/>
+			<target ref="id12"/>
+			<label kind="synchronisation" x="161" y="-68">data[3]!</label>
+		</transition>
+	</template>
+	<template>
+		<name>Network</name>
+		<declaration>Mote mote;
+
+void setLink(int moteId){
+    mote = loRA.motes[moteId];
+    if (mote.numParents == 1){
+        link = mote.links[0];
+    }
+}
+
+int getPacketLoss(){
+    return link.packetLoss;
+}
+    </declaration>
+		<location id="id17" x="51" y="-102">
+			<name x="-42" y="-144">MessageReached</name>
+			<committed/>
+		</location>
+		<location id="id18" x="-85" y="0">
+			<committed/>
+		</location>
+		<location id="id19" x="51" y="85">
+			<name x="0" y="102">PacketLoss</name>
+		</location>
+		<location id="id20" x="-85" y="-102">
+			<name x="-102" y="-136">Start</name>
+		</location>
+		<branchpoint id="id21" x="51" y="0">
+		</branchpoint>
+		<init ref="id20"/>
+		<transition>
+			<source ref="id17"/>
+			<target ref="id20"/>
+		</transition>
+		<transition>
+			<source ref="id18"/>
+			<target ref="id21"/>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id19"/>
+			<label kind="probability" x="-68" y="42">getPacketLoss()</label>
+		</transition>
+		<transition>
+			<source ref="id21"/>
+			<target ref="id17"/>
+			<label kind="probability" x="-59" y="-68">100-
+getPacketLoss()</label>
+		</transition>
+		<transition>
+			<source ref="id20"/>
+			<target ref="id18"/>
+			<label kind="select" x="-195" y="-76">mId:m_id</label>
+			<label kind="synchronisation" x="-195" y="-59">data[mId]?</label>
+			<label kind="assignment" x="-195" y="-42">setLink(mId)</label>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+//Process = Template();
+// List one or more processes to be composed into a system.
+system Topology, Network;//Process;
+    </system>
+	<queries>
+		<query>
+			<formula>Pr [&lt;=1](&lt;&gt;Network.PacketLoss)
+			</formula>
+			<comment>
+			</comment>
+		</query>
+	</queries>
+</nta>

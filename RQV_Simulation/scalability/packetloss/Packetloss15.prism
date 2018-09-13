@@ -1,0 +1,134 @@
+dtmc
+
+const double FrMote2_4 = 0.1;
+const double FrMote3_1 = 0.1;
+const double FrMote4_1 = 0.1;
+const double FrMote5_9 = 0.1;
+const double FrMote6_4 = 0.1;
+const double FrMote7_2 = 0.1;
+const double FrMote7_3 = 0.1;
+const double FrMote8_1 = 0.1;
+const double FrMote9_3 = 0.1;
+const double FrMote10_6 = 0.1;
+const double FrMote10_5 = 0.1;
+const double FrMote11_7 = 0.1;
+const double FrMote12_7 = 0.1;
+const double FrMote12_3 = 0.1;
+const double FrMote12_11 = 0.1;
+const double FrMote14_12 = 0.1;
+const double FrMote15_12 = 0.1;
+
+const double DfMote7_2 = 0.5;
+const double DfMote7_3 = 0.5;
+const double DfMote10_6 = 0.5;
+const double DfMote10_5 = 0.5;
+const double DfMote12_7 = 0.5;
+const double DfMote12_3 = 0.5;
+
+const double LoadMote2 = 0.8;
+const double LoadMote3 = 1.0;
+const double LoadMote4 = 0.8;
+const double LoadMote5 = 0.8;
+const double LoadMote6 = 0.8;
+const double LoadMote7 = 0.8;
+const double LoadMote8 = 1.0;
+const double LoadMote9 = 1.0;
+const double LoadMote10 = 0.8;
+const double LoadMote11 = 0.8;
+const double LoadMote12 = 0.8;
+const double LoadMote13 = 0.8;
+const double LoadMote14 = 0.8;
+const double LoadMote15 = 1.0;
+
+module Topology
+serviceInvoked:bool;
+sendID:[1..15] init 1;
+recvID:[1..15] init 1;
+turn:[1..16] init 16;
+
+//[] turn = 16 -> (turn'=2);
+[] turn = 16 -> LoadMote2:(turn'=2) + 1-LoadMote2:(turn'=16); 
+[] turn = 16 -> LoadMote3:(turn'=3) + 1-LoadMote3:(turn'=16); 
+[] turn = 16 -> LoadMote4:(turn'=4) + 1-LoadMote4:(turn'=16); 
+[] turn = 16 -> LoadMote5:(turn'=5) + 1-LoadMote5:(turn'=16); 
+[] turn = 16 -> LoadMote6:(turn'=6) + 1-LoadMote6:(turn'=16); 
+[] turn = 16 -> LoadMote7:(turn'=7) + 1-LoadMote7:(turn'=16); 
+[] turn = 16 -> LoadMote8:(turn'=8) + 1-LoadMote8:(turn'=16); 
+[] turn = 16 -> LoadMote9:(turn'=9) + 1-LoadMote9:(turn'=16); 
+[] turn = 16 -> LoadMote10:(turn'=10) + 1-LoadMote10:(turn'=16); 
+[] turn = 16 -> LoadMote11:(turn'=11) + 1-LoadMote11:(turn'=16); 
+[] turn = 16 -> LoadMote12:(turn'=12) + 1-LoadMote12:(turn'=16); 
+[] turn = 16 -> LoadMote13:(turn'=13) + 1-LoadMote13:(turn'=16); 
+[] turn = 16 -> LoadMote14:(turn'=14) + 1-LoadMote14:(turn'=16); 
+[] turn = 16 -> LoadMote15:(turn'=15) + 1-LoadMote15:(turn'=16); 
+
+[] turn = 2 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true);
+[] turn = 3 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 4 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 5 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 9) & (serviceInvoked'=true);
+[] turn = 6 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true);
+[] turn = 7 & serviceInvoked = false -> DfMote7_2:(sendID' = turn) & (recvID' = 2) & (serviceInvoked'=true) 
+	+ DfMote7_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+[] turn = 8 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 9 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 10 & serviceInvoked = false -> DfMote10_6:(sendID' = turn) & (recvID' = 6) & (serviceInvoked'=true) 
+	+ DfMote10_5:(sendID' = turn) & (recvID' = 5) & (serviceInvoked'=true);
+[] turn = 11 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 7) & (serviceInvoked'=true);
+[] turn = 12 & serviceInvoked = false -> DfMote12_7:(sendID' = turn) & (recvID' = 7) & (serviceInvoked'=true) 
+	+ DfMote12_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+[] turn = 13 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 11) & (serviceInvoked'=true);
+[] turn = 14 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 12) & (serviceInvoked'=true);
+[] turn = 15 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 12) & (serviceInvoked'=true);
+
+[sendData] (serviceInvoked=true) -> (serviceInvoked'=true); 
+
+[done] serviceInvoked=true & turn = 2 -> (serviceInvoked' = false) & (turn'=4);
+[done] serviceInvoked=true & turn = 3-> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 4 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 5 -> (serviceInvoked' = false) & (turn'=9);
+[done] serviceInvoked=true & turn = 6 -> (serviceInvoked' = false) & (turn'=4);
+[done] serviceInvoked=true & turn = 7 & recvID = 2 -> (serviceInvoked' = false) & (turn'=2);
+[done] serviceInvoked=true & turn = 7 & recvID = 3 -> (serviceInvoked' = false) & (turn'=3);
+[done] serviceInvoked=true & turn = 8 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 9 -> (serviceInvoked' = false) & (turn'=1);
+[done] serviceInvoked=true & turn = 10 & recvID = 6 -> (serviceInvoked' = false) & (turn'=6);
+[done] serviceInvoked=true & turn = 10 & recvID = 5 -> (serviceInvoked' = false) & (turn'=5);
+[done] serviceInvoked=true & turn = 11 -> (serviceInvoked' = false) & (turn'=7);
+[done] serviceInvoked=true & turn = 12 & recvID = 7 -> (serviceInvoked' = false) & (turn'=7);
+[done] serviceInvoked=true & turn = 12 & recvID = 3 -> (serviceInvoked' = false) & (turn'=3);
+[done] serviceInvoked=true & turn = 13 -> (serviceInvoked' = false) & (turn'=11);
+[done] serviceInvoked=true & turn = 14 -> (serviceInvoked' = false) & (turn'=12);
+[done] serviceInvoked=true & turn = 15 -> (serviceInvoked' = false) & (turn'=12);
+[done] serviceInvoked=true & turn = 1 -> (serviceInvoked' = false) & (turn'=1);
+
+[]turn = 1 -> (turn'=1);
+endmodule
+
+
+label "Packetloss" = status = 2;
+
+module Network
+status:[0..3] init 0; 
+[sendData] status = 0 -> (status'=1);
+
+[] status = 1 & sendID = 2 & recvID = 4  -> FrMote2_4:(status'=2) + 1-FrMote2_4:(status'=3);
+[] status = 1 & sendID = 3 & recvID = 1  -> FrMote3_1:(status'=2) + 1-FrMote3_1:(status'=3);
+[] status = 1 & sendID = 4 & recvID = 1  -> FrMote4_1:(status'=2) + 1-FrMote4_1:(status'=3);
+[] status = 1 & sendID = 5 & recvID = 9  -> FrMote5_9:(status'=2) + 1-FrMote5_9:(status'=3);
+[] status = 1 & sendID = 6 & recvID = 4  -> FrMote6_4:(status'=2) + 1-FrMote6_4:(status'=3);
+[] status = 1 & sendID = 7 & recvID = 2  -> FrMote7_2:(status'=2) + 1-FrMote7_2:(status'=3);
+[] status = 1 & sendID = 7 & recvID = 3  -> FrMote7_3:(status'=2) + 1-FrMote7_3:(status'=3);
+[] status = 1 & sendID = 8 & recvID = 1  -> FrMote8_1:(status'=2) + 1-FrMote8_1:(status'=3);
+[] status = 1 & sendID = 9 & recvID = 3  -> FrMote9_3:(status'=2) + 1-FrMote9_3:(status'=3);
+[] status = 1 & sendID = 10 & recvID = 6  -> FrMote10_6:(status'=2) + 1-FrMote10_6:(status'=3);
+[] status = 1 & sendID = 10 & recvID = 5  -> FrMote10_5:(status'=2) + 1-FrMote10_5:(status'=3);
+[] status = 1 & sendID = 11 & recvID = 7  -> FrMote11_7:(status'=2) + 1-FrMote11_7:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 7  -> FrMote12_7:(status'=2) + 1-FrMote12_7:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 3  -> FrMote12_3:(status'=2) + 1-FrMote12_3:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 11  -> FrMote12_11:(status'=2) + 1-FrMote12_11:(status'=3);
+[] status = 1 & sendID = 14 & recvID = 12  -> FrMote14_12:(status'=2) + 1-FrMote14_12:(status'=3);
+[] status = 1 & sendID = 15 & recvID = 12  -> FrMote15_12:(status'=2) + 1-FrMote15_12:(status'=3);
+
+[] status = 2 -> (status'=2);
+[done]status = 3 -> (status' = 0);
+endmodule

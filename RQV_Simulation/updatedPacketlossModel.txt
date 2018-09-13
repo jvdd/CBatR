@@ -1,0 +1,172 @@
+dtmc
+
+const double LoadMote2 = 0.500000;
+const double LoadMote3 = 1.000000;
+const double LoadMote4 = 0.500000;
+const double LoadMote5 = 0.500000;
+const double LoadMote6 = 0.500000;
+const double LoadMote7 = 0.500000;
+const double LoadMote8 = 1.000000;
+const double LoadMote9 = 1.000000;
+const double LoadMote10 = 0.000000;
+const double LoadMote11 = 0.500000;
+const double LoadMote12 = 0.500000;
+const double LoadMote13 = 0.730000;
+const double LoadMote14 = 0.500000;
+const double LoadMote15 = 1.000000;
+
+const double SNR_2_4 = 7.390700;
+const double SNR_3_1 = 0.748600;
+const double SNR_4_1 = -0.670800;
+const double SNR_5_9 = -0.051000;
+const double SNR_6_4 = -0.506600;
+const double SNR_7_2 = -0.435500;
+const double SNR_7_3 = 2.138500;
+const double SNR_8_1 = -0.103100;
+const double SNR_9_1 = -0.662100;
+const double SNR_10_6 = -0.724726;
+const double SNR_10_5 = 6.690800;
+const double SNR_11_7 = -0.342500;
+const double SNR_12_7 = -2.329000;
+const double SNR_12_3 = 7.500000;
+const double SNR_13_11 = -0.561500;
+const double SNR_14_12 = -0.373000;
+const double SNR_15_12 = -0.110800;
+
+const double DfMote7_2 = 1.000000;
+const double DfMote7_3 = 0.000000;
+const double DfMote10_6 = 1.000000;
+const double DfMote10_5 = 0.000000;
+const double DfMote12_7 = 1.000000;
+const double DfMote12_3 = 0.000000;
+
+//const double LoadMote2 = 0.5;
+//const double LoadMote3 = 1.0;
+//const double LoadMote4 = 0.5;
+//const double LoadMote5 = 0.5;
+//const double LoadMote6 = 0.5;
+//const double LoadMote7 = 0.5;
+//const double LoadMote8 = 1.0;
+//const double LoadMote9 = 1.0;
+//const double LoadMote10 = 1.0;
+//const double LoadMote11 = 0.5;
+//const double LoadMote12 = 0.5;
+//const double LoadMote13 = 0.5;
+//const double LoadMote14 = 1.0;
+//const double LoadMote15 = 1.0;
+
+//const double SNR_2_4 = 0;
+//const double SNR_3_1 = 0;
+//const double SNR_4_1 = 0;
+//const double SNR_5_9 = 0;
+//const double SNR_6_4 = 0;
+//const double SNR_7_2 = 0;
+//const double SNR_7_3 = 0;
+//const double SNR_8_1 = -10;
+//const double SNR_9_1 = 0;
+//const double SNR_10_6 = 0;
+//const double SNR_10_5 = 0;
+//const double SNR_11_7 = 0;
+//const double SNR_12_7 = 0;
+//const double SNR_12_3 = 0;
+//const double SNR_13_11 = 0;
+//const double SNR_14_12 = 0;
+//const double SNR_15_12 = 0;
+
+//const double DfMote7_2 = 0.5;
+//const double DfMote7_3 = 0.5;
+//const double DfMote10_6 = 0.5;
+//const double DfMote10_5 = 0.5;
+//const double DfMote12_7 = 0.5;
+//const double DfMote12_3 = 0.5;
+
+module Topology
+serviceInvoked:bool;
+sendID:[1..15] init 1;
+recvID:[1..15] init 1;
+turn:[1..16] init 16;
+
+//[] turn = 16 -> (turn'=2);
+[] turn = 16 -> LoadMote2:(turn'=2) + 1-LoadMote2:(turn'=16); 
+[] turn = 16 -> LoadMote3:(turn'=3) + 1-LoadMote3:(turn'=16); 
+[] turn = 16 -> LoadMote4:(turn'=4) + 1-LoadMote4:(turn'=16); 
+[] turn = 16 -> LoadMote5:(turn'=5) + 1-LoadMote5:(turn'=16); 
+[] turn = 16 -> LoadMote6:(turn'=6) + 1-LoadMote6:(turn'=16); 
+[] turn = 16 -> LoadMote7:(turn'=7) + 1-LoadMote7:(turn'=16); 
+[] turn = 16 -> LoadMote8:(turn'=8) + 1-LoadMote8:(turn'=16); 
+[] turn = 16 -> LoadMote9:(turn'=9) + 1-LoadMote9:(turn'=16); 
+[] turn = 16 -> LoadMote10:(turn'=10) + 1-LoadMote10:(turn'=16); 
+[] turn = 16 -> LoadMote11:(turn'=11) + 1-LoadMote11:(turn'=16); 
+[] turn = 16 -> LoadMote12:(turn'=12) + 1-LoadMote12:(turn'=16); 
+[] turn = 16 -> LoadMote13:(turn'=13) + 1-LoadMote13:(turn'=16); 
+[] turn = 16 -> LoadMote14:(turn'=14) + 1-LoadMote14:(turn'=16); 
+[] turn = 16 -> LoadMote15:(turn'=15) + 1-LoadMote15:(turn'=16); 
+
+[] turn = 2 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true);
+[] turn = 3 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 4 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 5 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 9) & (serviceInvoked'=true);
+[] turn = 6 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 4) & (serviceInvoked'=true);
+[] turn = 7 & serviceInvoked = false -> DfMote7_2:(sendID' = turn) & (recvID' = 2) & (serviceInvoked'=true) 
+	+ DfMote7_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+[] turn = 8 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 9 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 1) & (serviceInvoked'=true);
+[] turn = 10 & serviceInvoked = false -> DfMote10_6:(sendID' = turn) & (recvID' = 6) & (serviceInvoked'=true) 
+	+ DfMote10_5:(sendID' = turn) & (recvID' = 5) & (serviceInvoked'=true);
+[] turn = 11 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 7) & (serviceInvoked'=true);
+[] turn = 12 & serviceInvoked = false -> DfMote12_7:(sendID' = turn) & (recvID' = 7) & (serviceInvoked'=true)
+	+ DfMote12_3:(sendID' = turn) & (recvID' = 3) & (serviceInvoked'=true);
+[] turn = 13 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 11) & (serviceInvoked'=true);
+[] turn = 14 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 12) & (serviceInvoked'=true);
+[] turn = 15 & serviceInvoked = false -> (sendID' = turn) & (recvID' = 12) & (serviceInvoked'=true);
+
+[sendData] (serviceInvoked=true) -> (serviceInvoked'=true); 
+[done] serviceInvoked=true -> (serviceInvoked' =false) & (turn'=recvID);
+[]turn = 1 -> (turn'=1);
+endmodule
+
+label "Packetloss" = status = 2;
+
+formula failureRate2_4   = (SNR_2_4 >= 0? 0   : (SNR_2_4 = -50 ? 1.0 : -SNR_2_4/20));
+formula failureRate3_1   = (SNR_3_1 >= 0? 0   : (SNR_3_1 = -50 ? 1.0 : -SNR_3_1/20));
+formula failureRate4_1   = (SNR_4_1 >= 0? 0   : (SNR_4_1 = -50 ? 1.0 : -SNR_4_1/20));
+formula failureRate5_9   = (SNR_5_9 >= 0? 0   : (SNR_5_9 = -50 ? 1.0 : -SNR_5_9/20));
+formula failureRate6_4   = (SNR_6_4 >= 0? 0   : (SNR_6_4 = -50 ? 1.0 : -SNR_6_4/20));
+formula failureRate7_2   = (SNR_7_2 >= 0? 0   : (SNR_7_2 = -50 ? 1.0 : -SNR_7_2/20));
+formula failureRate7_3   = (SNR_7_3 >= 0? 0   : (SNR_7_3 = -50 ? 1.0 : -SNR_7_3/20));
+formula failureRate8_1   = (SNR_8_1 >= 0? 0   : (SNR_8_1 = -50 ? 1.0 : -SNR_8_1/20));
+formula failureRate9_1   = (SNR_9_1 >= 0? 0   : (SNR_9_1 = -50 ? 1.0 : -SNR_9_1/20));
+formula failureRate10_6  = (SNR_10_6 >= 0? 0  : (SNR_10_6 = -50 ? 1.0 : -SNR_10_6/20));
+formula failureRate10_5  = (SNR_10_5 >= 0? 0  : (SNR_10_5 = -50 ? 1.0 : -SNR_10_5/20));
+formula failureRate11_7  = (SNR_11_7 >= 0? 0  : (SNR_11_7 = -50 ? 1.0 : -SNR_11_7/20));
+formula failureRate12_7  = (SNR_12_7 >= 0? 0  : (SNR_12_7 = -50 ? 1.0 : -SNR_12_7/20));
+formula failureRate12_3  = (SNR_12_3 >= 0? 0  : (SNR_12_3 = -50 ? 1.0 : -SNR_12_3/20));
+formula failureRate13_11 = (SNR_13_11 >= 0? 0 : (SNR_13_11 = -50 ? 1.0 : -SNR_13_11/20));
+formula failureRate14_12 = (SNR_14_12 >= 0? 0 : (SNR_14_12 = -50 ? 1.0 : -SNR_14_12/20));
+formula failureRate15_12 = (SNR_15_12 >= 0? 0 : (SNR_15_12 = -50 ? 1.0 : -SNR_15_12/20));
+
+module Network
+status:[0..3] init 0; 
+[sendData] status = 0 -> (status'=1);
+
+[] status = 1 & sendID =  2 & recvID = 4  ->  failureRate2_4:(status'=2) + 1-failureRate2_4:(status'=3);
+[] status = 1 & sendID =  3 & recvID = 1  ->  failureRate3_1:(status'=2) + 1-failureRate3_1:(status'=3);
+[] status = 1 & sendID =  4 & recvID = 1  ->  failureRate4_1:(status'=2) + 1-failureRate4_1:(status'=3);
+[] status = 1 & sendID =  5 & recvID = 9  ->  failureRate5_9:(status'=2) + 1-failureRate5_9:(status'=3);
+[] status = 1 & sendID =  6 & recvID = 4  ->  failureRate6_4:(status'=2) + 1-failureRate6_4:(status'=3);
+[] status = 1 & sendID =  7 & recvID = 2  ->  failureRate7_2:(status'=2) + 1-failureRate7_2:(status'=3);
+[] status = 1 & sendID =  7 & recvID = 3  ->  failureRate7_3:(status'=2) + 1-failureRate7_3:(status'=3);
+[] status = 1 & sendID =  8 & recvID = 1  ->  failureRate8_1:(status'=2) + 1-failureRate8_1:(status'=3);
+[] status = 1 & sendID =  9 & recvID = 1  ->  failureRate9_1:(status'=2) + 1-failureRate9_1:(status'=3);
+[] status = 1 & sendID = 10 & recvID = 6  ->  failureRate10_6:(status'=2) + 1-failureRate10_6:(status'=3);
+[] status = 1 & sendID = 10 & recvID = 5  ->  failureRate10_5:(status'=2) + 1-failureRate10_5:(status'=3);
+[] status = 1 & sendID = 11 & recvID = 7  ->  failureRate11_7:(status'=2) + 1-failureRate11_7:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 7  ->  failureRate12_7:(status'=2) + 1-failureRate12_7:(status'=3);
+[] status = 1 & sendID = 12 & recvID = 3  ->  failureRate12_3:(status'=2) + 1-failureRate12_3:(status'=3);
+[] status = 1 & sendID = 13 & recvID = 11  -> failureRate13_11:(status'=2) + 1-failureRate13_11:(status'=3);
+[] status = 1 & sendID = 14 & recvID = 12  -> failureRate14_12:(status'=2) + 1-failureRate14_12:(status'=3);
+[] status = 1 & sendID = 15 & recvID = 12  -> failureRate15_12:(status'=2) + 1-failureRate15_12:(status'=3);
+
+[] status = 2 -> (status'=2);
+[done]status = 3 -> (status' = 0);
+endmodule

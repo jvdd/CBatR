@@ -1,0 +1,300 @@
+mdp
+
+const double Mote2TrafficLoadProb = 0.5;
+const double Mote3TrafficLoadProb = 1.0;
+const double Mote4TrafficLoadProb = 0.5;
+const double Mote5TrafficLoadProb = 0.5;
+const double Mote6TrafficLoadProb = 0.5;
+const double Mote7TrafficLoadProb = 0.5;
+const double Mote8TrafficLoadProb = 1.0;
+const double Mote9TrafficLoadProb = 1.0;
+
+
+const int link21Power = 15;
+const int link31Power = 15;
+const int link42Power = 15;
+const int link53Power = 15;
+const int link64Power = 15;
+const int link65Power = 15;
+const int link71Power = 15;
+const int link82Power = 15;
+const int link91Power = 15;
+
+
+const int df64 = 50;
+const int df65 = 50;
+
+
+const int MoteLoad = 10;
+const int MAX_QUEUE = 30;
+const int MAX_SLOTS = 40;
+
+// Power Consumption rates
+const double PCR0 = 20.2;
+const double PCR1 = 21.2;
+const double PCR2 = 22.3;
+const double PCR3 = 23.7;
+const double PCR4 = 24.7;
+const double PCR5 = 26.1;
+const double PCR6 = 27.5;
+const double PCR7 = 28.8;
+const double PCR8 = 30.0;
+const double PCR9 = 31.2;
+const double PCR10 = 32.4;
+const double PCR11 = 33.7;
+const double PCR12 = 35.1;
+const double PCR13 = 36.5;
+const double PCR14 = 38.0;
+const double PCR15 = 38.9;
+
+const double SFTime = 1.158;
+const double CoulombUnit = 1000.0;
+const int receptionTime = 4;
+const double receptionCost = 14.2;
+global power:[0..15];
+//global reciever : [0..15];
+global packets: [0..40] init 0;
+//////////////////////////////////////////////////////////////////
+
+module Gateway
+periodDone:bool;
+statusg:[0..1] init 0;
+
+[sendData21] turn = 2 -> (statusg'=1);
+[sendData31] turn = 3 -> (statusg'=1);
+[sendData71] turn = 7 -> (statusg'=1);
+[sendData91] turn = 9 -> (statusg'=1);
+
+[turn] turn=1  & periodDone = false -> (periodDone'=true);
+[turnDone] periodDone = true -> (periodDone'=false);
+
+endmodule
+//////////////////////////////////////////////////////////////////
+
+label "EnergyConsumption" = periodDone = true;
+label "Packets" = periodDone = true;
+
+module Mote2
+status2:[0..5] init 0;
+queue2:[0..MAX_QUEUE] init 0;
+
+[turn2] status2 = 0 -> Mote2TrafficLoadProb:(status2'=1) + 1-Mote2TrafficLoadProb:(status2'=2);
+
+[] status2 = 1 & queue2 <= MAX_SLOTS-MoteLoad -> (packets'=queue2 + MoteLoad) & (status2'=3) & (queue2'=0);
+[] status2 = 1 & queue2 > MAX_SLOTS-MoteLoad -> (packets'=MAX_SLOTS) & (status2'=3) & (queue2'=queue2-(MAX_SLOTS-MoteLoad));
+
+[] status2 = 2 & queue2 <= MAX_SLOTS -> (packets'=queue2) & (status2'=3) & (queue2'=0);
+[] status2 = 2 & queue2 > MAX_SLOTS -> (packets'=MAX_SLOTS) & (status2'=3) & (queue2'=queue2-MAX_SLOTS);
+
+[] status2 = 3 -> (power'=link21Power) &(status2'=4);
+
+[sendData21] status2 = 4 -> (status2'=5);
+[done2] status2 = 5 -> (status2'=0);
+// receiving part
+[sendData42] (queue2 + packets <= MAX_QUEUE) -> (queue2' = queue2 + packets);
+[sendData42] (queue2 + packets > MAX_QUEUE) -> (queue2' = MAX_QUEUE);
+endmodule
+
+module Mote3
+status3:[0..5] init 0;
+queue3:[0..MAX_QUEUE] init 0;
+
+[turn3] status3 = 0 -> Mote3TrafficLoadProb:(status3'=1) + 1-Mote3TrafficLoadProb:(status3'=2);
+
+//[] status3 = 1 -> (packets'=queue3 + 10) & (status3'=3);
+//[] status3 = 2 -> (packets'=queue3) & (status3'=3);
+
+[] status3 = 1 & queue3 <= MAX_SLOTS-MoteLoad -> (packets'=queue3 + MoteLoad) & (status3'=3) & (queue3'=0);
+[] status3 = 1 & queue3 > MAX_SLOTS-MoteLoad -> (packets'=MAX_SLOTS) & (status3'=3) & (queue3'=queue3-(MAX_SLOTS-MoteLoad));
+
+[] status3 = 2 & queue3 <= MAX_SLOTS -> (packets'=queue3) & (status3'=3) & (queue3'=0);
+[] status3 = 2 & queue3 > MAX_SLOTS -> (packets'=MAX_SLOTS) & (status3'=3) & (queue3'=queue3-MAX_SLOTS);
+
+[] status3 = 3 -> (power'=link31Power) &(status3'=4);
+
+[sendData31] status3 = 4 -> (status3'=5);
+[done3] status3 = 5 -> (status3'=0);
+// receiving part
+[sendData53] (queue3 + packets <= MAX_QUEUE) -> (queue3' = queue3 + packets);
+[sendData53] (queue3 + packets > MAX_QUEUE) -> (queue3' = MAX_QUEUE);
+
+endmodule
+
+module Mote4
+status4:[0..5] init 0;
+queue4:[0..MAX_QUEUE] init 0;
+
+[turn4] status4 = 0 -> Mote4TrafficLoadProb:(status4'=1) + 1-Mote4TrafficLoadProb:(status4'=2);
+
+//[] status4 = 1 -> (packets'=queue4 + 10) & (status4'=3);
+//[] status4 = 2 -> (packets'=queue4) & (status4'=3);
+
+[] status4 = 1 & queue4 <= MAX_SLOTS-MoteLoad -> (packets'=queue4 + MoteLoad) & (status4'=3) & (queue4'=0);
+[] status4 = 1 & queue4 > MAX_SLOTS-MoteLoad -> (packets'=MAX_SLOTS) & (status4'=3) & (queue4'=queue4-(MAX_SLOTS-MoteLoad));
+[] status4 = 2 & queue4 <= MAX_SLOTS -> (packets'=queue4) & (status4'=3) & (queue4'=0);
+[] status4 = 2 & queue4 > MAX_SLOTS -> (packets'=MAX_SLOTS) & (status4'=3) & (queue4'=queue4-MAX_SLOTS);
+
+[] status4 = 3 -> (power'=link42Power) &(status4'=4);
+
+[sendData42] status4 = 4 -> (status4'=5);
+[done4] status4 = 5 -> (status4'=0);
+// receiving part
+[sendData64] (queue4 + packets <= MAX_QUEUE) -> (queue4' = queue4 + packets);
+[sendData64] (queue4 + packets > MAX_QUEUE) -> (queue4' = MAX_QUEUE);
+endmodule
+//////////////////////////////////////////////////////////////////
+
+module Mote5
+status5:[0..5] init 0;
+queue5:[0..MAX_QUEUE] init 0;
+
+[turn5] status4 = 0 -> Mote5TrafficLoadProb:(status5'=1) + 1-Mote5TrafficLoadProb:(status5'=2);
+
+//[] status5 = 1 -> (packets'=queue5 + 10) & (status5'=3);
+//[] status5 = 2 -> (packets'=queue5) & (status5'=3);
+[] status5 = 1 & queue5 <= MAX_SLOTS-MoteLoad -> (packets'=queue5 + MoteLoad) & (status5'=3) & (queue5'=0);
+[] status5 = 1 & queue5 > MAX_SLOTS-MoteLoad -> (packets'=MAX_SLOTS) & (status5'=3) & (queue5'=queue5-(MAX_SLOTS-MoteLoad));
+[] status5 = 2 & queue5 <= MAX_SLOTS -> (packets'=queue5) & (status5'=3) & (queue5'=0);
+[] status5 = 2 & queue5 > MAX_SLOTS -> (packets'=MAX_SLOTS) & (status5'=3) & (queue5'=queue5-MAX_SLOTS);
+
+[] status5 = 3 -> (power'=link53Power) &(status5'=4);
+
+[sendData53] status5 = 4 -> (status5'=5);
+[done5] status5 = 5 -> (status5'=0);
+// receiving part
+[sendData65] (queue5 + packets <= MAX_QUEUE) -> (queue5' = queue5 + packets);
+[sendData65] (queue5 + packets > MAX_QUEUE) -> (queue5' = MAX_QUEUE);
+endmodule
+//////////////////////////////////////////////////////////////////
+
+module Mote6
+status6:[0..7] init 0;
+totalPackets6:[0..6];
+
+[turn6] status6 = 0 -> Mote6TrafficLoadProb:(status6'=1) + 1-Mote6TrafficLoadProb:(status6'=2);
+
+[] status6 = 1 -> (totalPackets6'=6) & (status6'=3);
+[] status6 = 2 -> (totalPackets6'=0) & (status6'=3);
+[] status6 = 3 -> (power'=link64Power) &(status6'=4) & (packets'= floor(totalPackets6*df64/100));
+
+[sendData64] status6 = 4 -> (status6'=5);
+[] status6 = 5 -> (power'=link65Power) & (status6'=6) & (packets'= ceil(totalPackets6*df65/100));
+[sendData65] status6 = 6 -> (status6'=7);
+[done6] status6 = 7 -> (status6'=0);
+
+endmodule
+
+module Mote7
+status7:[0..5] init 0;
+
+[turn7] status7 = 0 -> Mote7TrafficLoadProb:(status7'=1) + 1-Mote7TrafficLoadProb:(status7'=2);
+
+[] status7 = 1 -> (packets'=10) & (status7'=3);
+[] status7 = 2 -> (packets'=0) & (status7'=3);
+[] status7 = 3 -> (power'=link71Power) &(status7'=4);
+
+[sendData71] status7 = 4 -> (status7'=5);
+[done7] status7 = 5 -> (status7'=0);
+
+endmodule
+//////////////////////////////////////////////////////////////////
+module Mote8
+status8:[0..5] init 0;
+
+[turn8] status8 = 0 -> Mote8TrafficLoadProb:(status8'=1) + 1-Mote8TrafficLoadProb:(status8'=2);
+
+[] status8 = 1 -> (packets'=10) & (status8'=3);
+[] status8 = 2 -> (packets'=0) & (status8'=3);
+[] status8 = 3 -> (power'=link82Power) &(status8'=4);
+
+[sendData82] status8 = 4 -> (status8'=5);
+[done8] status8 = 5 -> (status8'=0);
+
+endmodule
+//////////////////////////////////////////////////////////////////
+
+module Mote9
+status9:[0..5] init 0;
+
+[turn9] status9 = 0 -> Mote9TrafficLoadProb:(status9'=1) + 1-Mote9TrafficLoadProb:(status9'=2);
+
+[] status9 = 1 -> (packets'=10) & (status9'=3);
+[] status9 = 2 -> (packets'=0) & (status9'=3);
+[] status9 = 3 -> (power'=link91Power) &(status9'=4);
+
+[sendData91] status9 = 4 -> (status9'=5);
+[done9] status9 = 5 -> (status9'=0);
+
+endmodule
+//////////////////////////////////////////////////////////////////
+
+
+
+module Topology
+turn:[-1..9] init 0;
+serviceInvoked:bool;
+
+[] turn = 0 -> (turn' = 7);
+[turn7] turn = 7 & serviceInvoked = false -> (serviceInvoked'=true);
+[done7] turn = 7->  (turn'=6) & (serviceInvoked'=false);
+[turn6] turn = 6 & serviceInvoked = false -> (serviceInvoked'=true);
+[done6] turn = 6 ->  (turn'=5) & (serviceInvoked'=false);
+[turn5] turn = 5 & serviceInvoked = false -> (serviceInvoked'=true);
+[done5] turn = 5 ->  (turn'=4) & (serviceInvoked'=false);
+[turn4] turn = 4  & serviceInvoked = false -> (serviceInvoked'=true);
+[done4] turn = 4  ->  (turn'=3) & (serviceInvoked'=false);
+[turn3] turn = 3  & serviceInvoked = false -> (serviceInvoked'=true);
+[done3] turn = 3  ->  (turn'=8) & (serviceInvoked'=false);
+[turn8] turn = 8  & serviceInvoked = false -> (serviceInvoked'=true);
+[done8] turn = 8  ->  (turn'=9) & (serviceInvoked'=false);
+[turn9] turn = 9  & serviceInvoked = false -> (serviceInvoked'=true);
+[done9] turn = 9  ->  (turn'=2) & (serviceInvoked'=false);
+[turn2] turn = 2  & serviceInvoked = false -> (serviceInvoked'=true);
+[done2] turn = 2  ->  (turn'=1) & (serviceInvoked'=false);
+
+
+[turn] turn=1 -> (turn'=-1);
+[turnDone] turn=-1 -> (turn'=0);
+endmodule
+//////////////////////////////////////////////////////////////////
+
+// probability to initiate the load
+formula calculateSendingEnergyConsumption = packets * SFTime *
+		 (power = 0 ? PCR0 : 
+		 (power = 1 ? PCR1 : 
+		 (power = 2 ? PCR2 : 
+		 (power = 3 ? PCR3 : 
+		 (power = 4 ? PCR4 : 
+		 (power = 5 ? PCR5 :
+		 (power = 6 ? PCR6 :
+		 (power = 7 ? PCR7 :
+		 (power = 8 ? PCR8 :
+		 (power = 9 ? PCR9 :
+		 (power = 10 ? PCR10 :
+		 (power = 11 ? PCR11 : 
+		 (power = 12 ? PCR12 :
+		 (power = 13 ? PCR13 :
+		 (power = 14 ? PCR14 :
+		 PCR15)))))))))))))))/CoulombUnit;
+formula calculateReceivingEnergyConsumption = ((15 - 5 -1) * MAX_SLOTS) * receptionTime * receptionCost/CoulombUnit;
+/////////////////////////////////////////////////////////////////
+rewards "EnergyConsumption"
+	[sendData21] true: calculateSendingEnergyConsumption;
+	[sendData31] true: calculateSendingEnergyConsumption;
+	[sendData42] true: calculateSendingEnergyConsumption;
+	[sendData53] true: calculateSendingEnergyConsumption;
+	[sendData64] true: calculateSendingEnergyConsumption;
+	[sendData65] true: calculateSendingEnergyConsumption;
+	[sendData71] true: calculateSendingEnergyConsumption;
+	[sendData82] true: calculateSendingEnergyConsumption;
+	[sendData91] true: calculateSendingEnergyConsumption;
+	
+	[turn] true: calculateReceivingEnergyConsumption;
+endrewards
+
+//rewards "Packets"
+//	[sendData31] true: packets;
+//	[sendData41] true: packets;
+//	[sendData81] true: packets;
+//	[sendData91] true: packets;
+//endrewards
