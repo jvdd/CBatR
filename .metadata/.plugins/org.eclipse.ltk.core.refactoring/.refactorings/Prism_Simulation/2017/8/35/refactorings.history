@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring accessors="true" comment="Delete 2 elements from project &apos;Simulator_Prism&apos;&#x0A;- Original project: &apos;Simulator_Prism&apos;&#x0A;- Original elements:&#x0A;     Simulator_Prism/src/deltaiot.activforms&#x0A;     Simulator_Prism/src/deltaiot.prism" description="Delete elements" element1="/src&lt;deltaiot.prism" element2="/src&lt;deltaiot" element3="/src&lt;deltaiot.activforms" element4="/src&lt;deltaiot" elements="4" flags="589830" id="org.eclipse.jdt.ui.delete" resources="0" stamp="1503831165027" subPackages="false" version="1.0"/>
-</session>

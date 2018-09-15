@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Copy 2 elements to &apos;lib&apos;&#x0A;- Original project: &apos;RealSystem_ActivFORMS&apos;&#x0A;- Destination element: &apos;lib&apos;&#x0A;- Original elements:&#x0A;     ActivFORMS.jar&#x0A;     ActivFORMS_lib" description="Copy elements" element1="lib/ActivFORMS.jar" element2="lib/ActivFORMS_lib" files="1" flags="589830" folders="1" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1503831015438" target="/RealSystem_Prism/lib" units="0" version="1.0"/>
-</session>

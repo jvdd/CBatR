@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Copy package &apos;deltaiot.cbam&apos; to &apos;ActivFORMS_RealSystem/src&apos;&#x0D;&#x0A;- Original project: &apos;ActivFORMS_Simulation&apos;&#x0D;&#x0A;- Destination element: &apos;ActivFORMS_RealSystem/src&apos;&#x0D;&#x0A;- Original element: &apos;ActivFORMS_Simulation/src/deltaiot.cbam&apos;" description="Copy package" destination="=ActivFORMS_RealSystem/src" element1="/src&lt;deltaiot.cbam" flags="589830" fragments="1" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyPackages" stamp="1513165357062" version="1.0"/>
-</session>

@@ -1,5 +1,0 @@
-Creation date and time:   12-21-2017   17-21-50
-TIMESLOTS: 1
-Energy Consumption versions: [0, 1]   (0 is used for calculating cost in RCBAM)
-RCBAM - Running directly from the uppaal algorithm
-       EnergyConsumption,     AdaptEnergyConsumpV0,       TotEnergyConsumpV0,     AdaptEnergyConsumpV1,       TotEnergyConsumpV1,             PacketLoss,                Latency, QueueLoss,       Sent,           nbAdapts, nbUniqueAdapts   mote2EC,    mote3EC,    mote4EC,    mote5EC,    mote6EC,    mote7EC,    mote8EC,    mote9EC,   mote10EC,   mote11EC,   mote12EC,   mote13EC,   mote14EC,   mote15EC, ,       Date,
